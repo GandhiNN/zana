@@ -226,6 +226,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "aws-sdk-glue"
+version = "1.69.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a741d4cf8386760213097345aa262ed56154a70733254e138def62b42a602e1"
+dependencies = [
+ "aws-credential-types 1.2.1",
+ "aws-runtime 1.4.3",
+ "aws-smithy-async 1.2.1",
+ "aws-smithy-http 0.60.11",
+ "aws-smithy-json 0.60.7",
+ "aws-smithy-runtime 1.7.3",
+ "aws-smithy-runtime-api 1.7.3",
+ "aws-smithy-types 1.2.9",
+ "aws-types 1.3.3",
+ "bytes",
+ "http 0.2.12",
+ "once_cell",
+ "regex-lite",
+ "tracing",
+]
+
+[[package]]
 name = "aws-sdk-rds"
 version = "1.65.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2187,6 +2209,7 @@ version = "0.1.0"
 dependencies = [
  "aws-config",
  "aws-sdk-dynamodb",
+ "aws-sdk-glue",
  "aws-sdk-rds",
  "aws-sdk-ssooidc 0.29.0",
  "aws-types 1.3.3",
