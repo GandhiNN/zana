@@ -16,8 +16,12 @@ pub async fn list_tables(config: SdkConfig, database: String) {
     while let Some(list_tables_output) = list_tables.next().await {
         match list_tables_output {
             Ok(list_tables) => {
-                let names = list_tables.table_list();
-                println!("{:#?}", names)
+                let tables = list_tables.table_list();
+                println!("table,");
+                for table in tables {
+                    println!("{},", table.name())
+                }
+                // println!("{:#?}", tables)
             }
             Err(e) => println!("{:?}", e),
         }
