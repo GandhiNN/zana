@@ -1,4 +1,4 @@
-use zana::aws::{config, dynamodb};
+use zana::aws::{config, dynamodb, rds};
 
 #[tokio::main]
 async fn main() {
@@ -14,9 +14,11 @@ async fn main() {
     println!("Using shared config with profile name: {}", aws_profile);
     let shared_config: aws_types::SdkConfig = config::set_config(aws_profile, *timeout).await;
 
-    if service == "dynamodb" {
-        dynamodb::list_tables_v2(shared_config).await;
-    } else {
-        println!("No suitable services!")
+    // Match service name input
+    // Convert &String to &str for match case statement
+    match service.as_str() {
+        "dynamodb" => dynamodb::list_tables(shared_config).await,
+        "rds" => rds::list_instances(shared_config).await,
+        _ => println!("No suitable services!"),
     }
 }
