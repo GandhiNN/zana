@@ -12,6 +12,7 @@ async fn main() {
 
     // Build aws config
     println!("Using shared config with profile name: {}", aws_profile);
+    println!();
     let shared_config: aws_types::SdkConfig = config::set_config(aws_profile, *timeout).await;
 
     // Match service name input
