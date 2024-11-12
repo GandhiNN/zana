@@ -1,4 +1,4 @@
-use zana::aws::{config, dynamodb, rds};
+use zana::aws::{config, dynamodb, glue, rds};
 
 #[tokio::main]
 async fn main() {
@@ -20,6 +20,7 @@ async fn main() {
     match service.as_str() {
         "dynamodb" => dynamodb::list_tables(shared_config).await,
         "rds" => rds::list_instances(shared_config).await,
+        "glue" => glue::list_tables(shared_config, "imel-compacted".to_owned()).await,
         _ => println!("No suitable services!"),
     }
 }
