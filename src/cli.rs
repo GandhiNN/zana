@@ -1,7 +1,7 @@
-use clap::{Arg, ArgAction, Command};
+use clap::{command, Arg, ArgAction};
 
 pub fn cmd() -> clap::Command {
-    Command::new("zana")
+    command!()
         .version("0.1.0")
         .about("A CLI tool to interact with AWS environment")
         .author("Ngakan Gandhi <ngandhi.pmintl.net>")
