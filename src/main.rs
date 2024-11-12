@@ -20,7 +20,7 @@ async fn main() {
     match service.as_str() {
         "dynamodb" => dynamodb::list_tables(shared_config).await,
         "rds" => rds::list_instances(shared_config).await,
-        "glue" => glue::list_tables(shared_config, "imel-compacted".to_string()).await,
+        "glue" => glue::list_tables(shared_config, "lesmes-ro01".to_string()).await,
         _ => println!("No suitable services!"),
     }
 }
