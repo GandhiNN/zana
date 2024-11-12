@@ -6,7 +6,7 @@ async fn set_client(config: SdkConfig) -> Result<Client, Error> {
     Ok(client)
 }
 
-async fn list_tables(client: &Client) -> Result<Vec<String>, Error> {
+async fn get_tables(client: &Client) -> Result<Vec<String>, Error> {
     // Get list of tables in DynamoDB
     let mut table_names: Vec<String> = Vec::new();
     let response = client.list_tables().send().await?;
@@ -17,9 +17,9 @@ async fn list_tables(client: &Client) -> Result<Vec<String>, Error> {
     Ok(table_names)
 }
 
-pub async fn list_tables_v2(config: SdkConfig) {
+pub async fn list_tables(config: SdkConfig) {
     let client = set_client(config).await.unwrap();
-    let tables = list_tables(&client).await;
+    let tables = get_tables(&client).await;
     match tables {
         Err(e) => println!("{:?}", e),
         _ => {
