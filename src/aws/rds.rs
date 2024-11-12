@@ -15,13 +15,14 @@ pub async fn list_instances(config: SdkConfig) {
     let instances_list = get_instances(&client).await;
     match instances_list {
         Ok(instances) => {
+            println!("id,class,engine,status,endpoint",);
             for instance in instances.db_instances() {
-                println!(
-                    "DB instance identifier: {:?}",
-                    instance
-                        .db_instance_identifier()
-                        .expect("Instance should have identifiers")
-                )
+                let id = instance.db_instance_identifier().unwrap();
+                let class = instance.db_instance_class().unwrap();
+                let engine = instance.engine().unwrap();
+                let status = instance.db_instance_status().unwrap();
+                let endpoint = instance.endpoint().unwrap().address.clone().unwrap();
+                println!("{},{},{},{},{}", id, class, engine, status, endpoint);
             }
         }
         Err(e) => println!("{:?}", e),
