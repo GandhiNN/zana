@@ -88,7 +88,4 @@ pub async fn set_config(aws_profile: &str, timeout: u64) -> aws_types::SdkConfig
         .timeout_config(timeout_config)
         .load()
         .await
-
-    // // set AWS config
-    // aws_config::load_from_env().await
 }
