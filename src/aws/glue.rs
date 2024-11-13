@@ -17,11 +17,33 @@ pub async fn list_tables(config: SdkConfig, database: String) {
         match list_tables_output {
             Ok(list_tables) => {
                 let tables = list_tables.table_list();
-                println!("table,");
+                println!("tableName,databaseName,description,owner,createTime,updateTime,lastAccessTime,averageRecordSizeInBytes,recordCount,sizeKeyInBytes");
                 for table in tables {
-                    println!("{},", table.name())
+                    let table_name = table.name();
+                    let database_name = table.database_name().unwrap_or_default();
+                    let description = table.description().unwrap_or_default();
+                    let owner = table.owner().unwrap_or_default();
+                    let create_time = table.create_time().unwrap();
+                    let update_time = table.update_time().unwrap();
+                    let last_access_time = table.last_access_time().unwrap();
+                    let table_params = table.storage_descriptor().unwrap().parameters().unwrap();
+                    let avg_record_size = table_params.get("averageRecordSize").unwrap();
+                    let record_count = table_params.get("recordCount").unwrap();
+                    let size_key = table_params.get("sizeKey").unwrap();
+                    println!(
+                        "{},{},{},{},{},{},{},{},{},{}",
+                        table_name,
+                        database_name,
+                        description,
+                        owner,
+                        create_time,
+                        update_time,
+                        last_access_time,
+                        record_count,
+                        avg_record_size,
+                        size_key
+                    );
                 }
-                // println!("{:#?}", tables)
             }
             Err(e) => println!("{:?}", e),
         }
