@@ -4,6 +4,8 @@ use std::collections::HashMap;
 
 extern crate std;
 
+const OSRELEASE: &str = "/proc/sys/kernel/osrelease";
+
 fn check_runtime_os() -> &'static str {
     if is_wsl() {
         "wsl"
@@ -14,7 +16,7 @@ fn check_runtime_os() -> &'static str {
 
 fn is_wsl() -> bool {
     use std::io::prelude::*;
-    let mut file = std::fs::File::open("/proc/sys/kernel/osrelease").expect("File not found");
+    let mut file = std::fs::File::open(OSRELEASE).expect("File not found");
     let mut data = String::new();
     file.read_to_string(&mut data)
         .expect("Error while reading file");
