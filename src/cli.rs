@@ -1,40 +1,67 @@
-use clap::{command, Arg, ArgAction};
+#[allow(dead_code)]
+use clap::{arg, command, value_parser, Command};
 
-pub fn cmd() -> clap::Command {
+pub fn cmd() -> Command {
     command!()
         .version("0.1.0")
         .about("A CLI tool to interact with AWS environment")
         .author("Ngakan Gandhi <ngandhi.pmintl.net>")
         .bin_name("zana")
-        .arg(
-            Arg::new("profile")
-                .short('p')
-                .long("profile")
-                .default_value("default")
-                .value_parser(clap::value_parser!(String))
-                .help("AWS profile name to be used"),
+        .subcommand(
+            Command::new("glue")
+                .about("Glue tasks")
+                .arg(
+                    arg!(--profile <VALUE>)
+                        .required(true)
+                        .value_parser(value_parser!(String)),
+                )
+                .arg(
+                    arg!(--timeout <VALUE>)
+                        .required(true)
+                        .value_parser(value_parser!(u64)),
+                )
+                .arg(
+                    arg!(--task <VALUE>)
+                        .required(true)
+                        .value_parser(value_parser!(String)),
+                ),
         )
-        .arg(
-            Arg::new("config")
-                .short('c')
-                .long("config")
-                .action(ArgAction::SetTrue)
-                .value_parser(clap::value_parser!(bool))
-                .help("Print the currently configured AWS profile"),
+        .subcommand(
+            Command::new("rds")
+                .about("RDS tasks")
+                .arg(
+                    arg!(--profile <VALUE>)
+                        .required(true)
+                        .value_parser(value_parser!(String)),
+                )
+                .arg(
+                    arg!(--timeout <VALUE>)
+                        .required(true)
+                        .value_parser(value_parser!(u64)),
+                )
+                .arg(
+                    arg!(--task <VALUE>)
+                        .required(true)
+                        .value_parser(value_parser!(String)),
+                ),
         )
-        .arg(
-            Arg::new("timeout")
-                .short('t')
-                .long("timeout")
-                .default_value("10")
-                .value_parser(clap::value_parser!(u64))
-                .help("Session timeout duration in seconds"),
-        )
-        .arg(
-            Arg::new("service")
-                .short('s')
-                .long("service")
-                .value_parser(clap::value_parser!(String))
-                .help("AWS service name to use"),
+        .subcommand(
+            Command::new("dynamodb")
+                .about("DynamoDB tasks")
+                .arg(
+                    arg!(--profile <VALUE>)
+                        .required(true)
+                        .value_parser(value_parser!(String)),
+                )
+                .arg(
+                    arg!(--timeout <VALUE>)
+                        .required(true)
+                        .value_parser(value_parser!(u64)),
+                )
+                .arg(
+                    arg!(--task <VALUE>)
+                        .required(true)
+                        .value_parser(value_parser!(String)),
+                ),
         )
 }
