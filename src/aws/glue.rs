@@ -44,6 +44,7 @@ pub async fn list_tables(config: SdkConfig, database: String) {
                         size_key
                     );
                 }
+                // println!("{:#?}", tables);
             }
             Err(e) => println!("{:?}", e),
         }

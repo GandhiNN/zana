@@ -1,4 +1,4 @@
-#[allow(dead_code)]
+use log::{error, info};
 use zana::aws::{config, dynamodb, glue, rds};
 
 #[tokio::main]
@@ -9,7 +9,7 @@ async fn main() {
     // Parse global arguments to propagate to subcommands
     let aws_profile = matches.get_one::<String>("profile").unwrap();
     let timeout: &u64 = matches.get_one::<u64>("timeout").unwrap();
-    println!("Using shared config with profile name: {}", aws_profile);
+    info!("Using shared config with profile name: {}", aws_profile);
     let shared_config: aws_types::SdkConfig = config::set_config(aws_profile, *timeout).await;
 
     // Match subcommands input
@@ -33,15 +33,15 @@ async fn main() {
         // AWS RDS logic
         match matches.get_one::<String>("task").unwrap().as_str() {
             "list-instances" => rds::list_instances(shared_config).await,
-            _ => println!("No task provided!"),
+            _ => error!("No task provided!"),
         }
     } else if let Some(matches) = matches.subcommand_matches("dynamodb") {
         // AWS DynamoDB logic
         match matches.get_one::<String>("task").unwrap().as_str() {
             "list-tables" => dynamodb::list_tables(shared_config).await,
-            _ => println!("No task provided!"),
+            _ => error!("No task provided!"),
         }
     } else {
-        eprintln!("Faulty input is provided!")
+        error!("Faulty input is provided!")
     }
 }
