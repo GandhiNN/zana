@@ -19,6 +19,8 @@ tokio-stream = "0.1.16"
 aws-config = {version = "1.5.10", features = ["behavior-version-latest"] }
 aws-sdk-glue = "1.69.0"
 log = "0.4.22"
+env_logger = "0.11.5"
+chrono = "0.4.38"
 
 [profile.release]
 opt-level = 'z'     # Optimize for size
