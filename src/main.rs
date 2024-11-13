@@ -23,6 +23,11 @@ async fn main() {
             if matches.get_flag("list") {
                 glue::list_databases(shared_config).await;
             }
+        } else if let Some(matches) = matches.subcommand_matches("table") {
+            let db = matches.get_one::<String>("database").unwrap();
+            if matches.get_flag("list") {
+                glue::list_tables(shared_config, db.to_string()).await;
+            }
         }
     } else if let Some(matches) = matches.subcommand_matches("rds") {
         // AWS RDS logic
