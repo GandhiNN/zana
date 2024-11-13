@@ -2217,6 +2217,7 @@ dependencies = [
  "configparser 3.1.0",
  "exitcode",
  "ini",
+ "log",
  "tokio",
  "tokio-stream",
 ]
