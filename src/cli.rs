@@ -27,7 +27,7 @@ pub fn cmd() -> Command {
                         .arg(arg!(-l --list "lists glue jobs").action(ArgAction::SetTrue)),
                 )
                 .subcommand(
-                    Command::new("database")
+                    Command::new("databases")
                         .about("Glue databases API")
                         .arg(arg!(-l --list "lists glue databases").action(ArgAction::SetTrue)),
                 )
