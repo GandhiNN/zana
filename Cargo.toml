@@ -19,3 +19,10 @@ tokio-stream = "0.1.16"
 aws-config = {version = "1.5.10", features = ["behavior-version-latest"] }
 aws-sdk-glue = "1.69.0"
 log = "0.4.22"
+
+[profile.release]
+opt-level = 'z'     # Optimize for size
+lto = true          # Enable link-time optimization
+codegen-units = 1   # Reduce number of codegen units to increase optimizations
+panic = 'abort'     # Abort on panic
+strip = true        # Strip symbols from binary*

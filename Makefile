@@ -41,7 +41,7 @@ run:
 
 build:	
 	@echo "Building binary for ${OS} os with ${ARCH} architecture"
-	@cargo build
+	@cargo build --release
 
 all: build
 
