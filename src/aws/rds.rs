@@ -15,7 +15,7 @@ pub async fn list_instances(config: SdkConfig) {
     let instances_list = get_instances(&client).await;
     match instances_list {
         Ok(instances) => {
-            println!("id,class,engine,status,endpoint",);
+            println!("id,class,engine,status,endpoint");
             for instance in instances.db_instances() {
                 let id = instance.db_instance_identifier().unwrap();
                 let class = instance.db_instance_class().unwrap();
