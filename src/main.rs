@@ -19,7 +19,7 @@ async fn main() {
             if matches.get_flag("list") {
                 glue::list_jobs(shared_config).await;
             }
-        } else if let Some(matches) = matches.subcommand_matches("database") {
+        } else if let Some(matches) = matches.subcommand_matches("databases") {
             if matches.get_flag("list") {
                 glue::list_databases(shared_config).await;
             }
