@@ -7,61 +7,42 @@ pub fn cmd() -> Command {
         .about("A CLI tool to interact with AWS environment")
         .author("Ngakan Gandhi <ngandhi.pmintl.net>")
         .bin_name("zana")
+        .arg(
+            arg!(--profile <VALUE>)
+                .value_parser(value_parser!(String))
+                .global(true),
+        )
+        .arg(
+            arg!(--timeout <VALUE>)
+                .value_parser(value_parser!(u64))
+                .global(true),
+        )
         .subcommand(
             Command::new("glue")
-                .about("Glue tasks")
+                .about("Glue API")
                 .arg(
-                    arg!(--profile <VALUE>)
-                        .required(true)
+                    arg!(--database <VALUE>)
+                        .required(false)
                         .value_parser(value_parser!(String)),
                 )
                 .arg(
-                    arg!(--timeout <VALUE>)
-                        .required(true)
-                        .value_parser(value_parser!(u64)),
-                )
-                .arg(
-                    arg!(--task <VALUE>)
-                        .required(true)
+                    arg!(--table <VALUE>)
+                        .required(false)
                         .value_parser(value_parser!(String)),
                 ),
         )
         .subcommand(
-            Command::new("rds")
-                .about("RDS tasks")
-                .arg(
-                    arg!(--profile <VALUE>)
-                        .required(true)
-                        .value_parser(value_parser!(String)),
-                )
-                .arg(
-                    arg!(--timeout <VALUE>)
-                        .required(true)
-                        .value_parser(value_parser!(u64)),
-                )
-                .arg(
-                    arg!(--task <VALUE>)
-                        .required(true)
-                        .value_parser(value_parser!(String)),
-                ),
+            Command::new("rds").about("RDS API").arg(
+                arg!(--task <VALUE>)
+                    .required(true)
+                    .value_parser(value_parser!(String)),
+            ),
         )
         .subcommand(
-            Command::new("dynamodb")
-                .about("DynamoDB tasks")
-                .arg(
-                    arg!(--profile <VALUE>)
-                        .required(true)
-                        .value_parser(value_parser!(String)),
-                )
-                .arg(
-                    arg!(--timeout <VALUE>)
-                        .required(true)
-                        .value_parser(value_parser!(u64)),
-                )
-                .arg(
-                    arg!(--task <VALUE>)
-                        .required(true)
-                        .value_parser(value_parser!(String)),
-                ),
+            Command::new("dynamodb").about("DynamoDB API").arg(
+                arg!(--task <VALUE>)
+                    .required(true)
+                    .value_parser(value_parser!(String)),
+            ),
         )
 }
