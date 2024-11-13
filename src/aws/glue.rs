@@ -41,3 +41,21 @@ pub async fn list_jobs(config: SdkConfig) {
         }
     }
 }
+
+pub async fn list_databases(config: SdkConfig) {
+    let client = set_client(config).await.unwrap();
+    let mut list_databases = client.get_databases().into_paginator().send();
+    while let Some(list_databases_output) = list_databases.next().await {
+        match list_databases_output {
+            Ok(list_databases) => {
+                let databases = list_databases.database_list();
+                println!("database,");
+                for db in databases {
+                    println!("{},", db.name())
+                }
+                // println!("{:#?}", databases)
+            }
+            Err(e) => println!("{:?}", e),
+        }
+    }
+}
