@@ -15,9 +15,14 @@ async fn main() {
     // Match subcommands input
     if let Some(matches) = matches.subcommand_matches("glue") {
         // AWS Glue logic
-        match matches.get_one::<String>("task").unwrap().as_str() {
-            "list-tables" => glue::list_tables(shared_config, "lesmes-ro01".to_string()).await,
-            _ => println!("No task provided!"),
+        if let Some(matches) = matches.subcommand_matches("jobs") {
+            if matches.get_flag("list") {
+                glue::list_jobs(shared_config).await;
+            }
+        } else if let Some(matches) = matches.subcommand_matches("database") {
+            if matches.get_flag("list") {
+                glue::list_databases(shared_config).await;
+            }
         }
     } else if let Some(matches) = matches.subcommand_matches("rds") {
         // AWS RDS logic

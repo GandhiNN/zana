@@ -1,3 +1,4 @@
+use clap::ArgAction;
 #[allow(dead_code)]
 use clap::{arg, command, value_parser, Command};
 
@@ -20,10 +21,15 @@ pub fn cmd() -> Command {
         .subcommand(
             Command::new("glue")
                 .about("Glue API")
-                .arg(
-                    arg!(--database <VALUE>)
-                        .required(false)
-                        .value_parser(value_parser!(String)),
+                .subcommand(
+                    Command::new("jobs")
+                        .about("Glue jobs API")
+                        .arg(arg!(-l --list "lists glue jobs").action(ArgAction::SetTrue)),
+                )
+                .subcommand(
+                    Command::new("database")
+                        .about("Glue databases API")
+                        .arg(arg!(-l --list "lists glue databases").action(ArgAction::SetTrue)),
                 )
                 .arg(
                     arg!(--table <VALUE>)
