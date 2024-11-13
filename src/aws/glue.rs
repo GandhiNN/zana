@@ -35,7 +35,9 @@ pub async fn list_jobs(config: SdkConfig) {
         match list_jobs_output {
             Ok(list_jobs) => {
                 let names = list_jobs.job_names();
-                println!("{:#?}", names)
+                for name in names {
+                    println!("{}", name);
+                }
             }
             Err(e) => println!("{:?}", e),
         }
@@ -49,9 +51,13 @@ pub async fn list_databases(config: SdkConfig) {
         match list_databases_output {
             Ok(list_databases) => {
                 let databases = list_databases.database_list();
-                println!("database,");
+                println!("dbName,description,locationURI,createTime");
                 for db in databases {
-                    println!("{},", db.name())
+                    let name = db.name();
+                    let description = db.description().unwrap_or_default();
+                    let location_uri = db.location_uri().unwrap_or_default();
+                    let create_time = db.create_time().unwrap();
+                    println!("{},{},{},{}", name, description, location_uri, create_time);
                 }
                 // println!("{:#?}", databases)
             }
