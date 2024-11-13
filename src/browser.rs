@@ -6,9 +6,9 @@ extern crate std;
 
 fn check_runtime_os() -> &'static str {
     if is_wsl() {
-        return "wsl";
+        "wsl"
     } else {
-        return std::env::consts::OS;
+        std::env::consts::OS
     }
 }
 
@@ -21,7 +21,7 @@ fn is_wsl() -> bool {
     if data.to_lowercase().contains("wsl") {
         return true;
     }
-    return false;
+    false
 }
 
 fn load_url_config() -> HashMap<String, Option<String>> {
@@ -68,10 +68,7 @@ fn open_url_in_browser(url: &str) {
             .arg(url)
             .status()
             .expect("process failed to execute"),
-        _ => {
-            println!("not implemented");
-            return;
-        }
+        _ => std::process::exit(1),
     };
 }
 
@@ -83,13 +80,9 @@ pub fn url_browser_menu() {
         Ok(buf) => buf,
         Err(error) => panic!("{}", error),
     };
-    match url.as_str().trim_end() {
-        // trim_end() is used to remove '\n'
-        "exit" => {
-            println!("Exiting program!");
-            std::process::exit(exitcode::OK);
-        }
-        _ => (),
+    if url.as_str().trim_end() == "exit" {
+        println!("Exiting program!");
+        std::process::exit(exitcode::OK)
     }
     let url_to_browse = url_map
         .get(url.trim_end())
