@@ -84,3 +84,9 @@ pub async fn list_objects(config: SdkConfig, bucket: String) {
         }
     }
 }
+
+pub async fn list_objects_versions(config: SdkConfig, bucket: String) {
+    let client = set_client(config).await.unwrap();
+    let list_objects_versions = client.list_object_versions().bucket(bucket).send().await;
+    println!("{:#?}", list_objects_versions)
+}
