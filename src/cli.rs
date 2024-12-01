@@ -51,7 +51,8 @@ pub fn cmd() -> Command {
                         .about("S3 objects API")
                         .arg(arg!(-b --bucket <VALUE> "input s3 bucket").required(true))
                         .arg(arg!(-l --list "list objects in an s3 bucket"))
-                        .arg(arg!(-v --versions "list objects versions in an s3 bucket")),
+                        .arg(arg!(-v --versions "list objects versions in an s3 bucket"))
+                        .arg(arg!(-p --pretty "pretty print output")),
                 ),
         )
         .subcommand(

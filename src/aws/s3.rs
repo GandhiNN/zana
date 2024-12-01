@@ -96,7 +96,7 @@ pub async fn list_objects(config: SdkConfig, bucket: String) {
     }
 }
 
-pub async fn list_objects_versions(config: SdkConfig, bucket: String) -> Result<(), Error> {
+pub async fn list_objects_versions(config: SdkConfig, bucket: String) -> Result<Table, Error> {
     let client = set_client(config).await.unwrap();
     let list_objects_versions = client.list_object_versions().bucket(bucket).send().await?;
     let mut s3_object_version: Vec<S3ObjectVersion> = Vec::new();
@@ -123,9 +123,8 @@ pub async fn list_objects_versions(config: SdkConfig, bucket: String) -> Result<
             obj_etag: etag,
             obj_owner: owner,
         });
-        let mut table = Table::new(&s3_object_version);
-        table.with(Style::psql());
-        println!("{}", table);
     }
-    Ok(())
+    let mut table = Table::new(&s3_object_version);
+    table.with(Style::psql());
+    Ok(table)
 }
