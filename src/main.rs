@@ -69,7 +69,7 @@ async fn main() {
             if matches.get_flag("list") {
                 s3::list_objects(shared_config, bucket.to_string()).await;
             } else if matches.get_flag("versions") {
-                s3::list_objects_versions(shared_config, bucket.to_string()).await;
+                let _ = s3::list_objects_versions(shared_config, bucket.to_string()).await;
             }
         }
     } else {
