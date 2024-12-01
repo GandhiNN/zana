@@ -43,10 +43,10 @@ pub async fn list_instances(config: SdkConfig) {
                     status: db_status,
                     endpoint: db_endpoint,
                 });
-                let mut table = Table::new(&db_instances);
-                table.with(Style::psql());
-                println!("{}", table);
             }
+            let mut table = Table::new(&db_instances);
+            table.with(Style::psql());
+            println!("{}", table);
         }
         Err(e) => println!("{:?}", e),
     }
