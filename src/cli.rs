@@ -39,11 +39,19 @@ pub fn cmd() -> Command {
                 ),
         )
         .subcommand(
-            Command::new("s3").about("S3 API").subcommand(
-                Command::new("bucket")
-                    .about("S3 bucket API")
-                    .arg(arg!(-l --list "lists s3 buckets")),
-            ),
+            Command::new("s3")
+                .about("S3 API")
+                .subcommand(
+                    Command::new("bucket")
+                        .about("S3 bucket API")
+                        .arg(arg!(-l --list "lists s3 buckets")),
+                )
+                .subcommand(
+                    Command::new("objects")
+                        .about("S3 objects API")
+                        .arg(arg!(-b --bucket <VALUE> "input s3 bucket").required(true))
+                        .arg(arg!(-l --list "list objects in an s3 bucket")),
+                ),
         )
         .subcommand(
             Command::new("rds").about("RDS API").arg(

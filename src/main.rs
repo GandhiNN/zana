@@ -64,6 +64,11 @@ async fn main() {
             if matches.get_flag("list") {
                 s3::list_buckets(shared_config).await;
             }
+        } else if let Some(matches) = matches.subcommand_matches("objects") {
+            let bucket = matches.get_one::<String>("bucket").unwrap();
+            if matches.get_flag("list") {
+                s3::list_objects(shared_config, bucket.to_string()).await;
+            }
         }
     } else {
         log::error!("Faulty input is provided!")
