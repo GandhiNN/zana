@@ -2,7 +2,7 @@ use chrono::Local;
 use env_logger::Builder;
 use log::LevelFilter;
 use std::io::Write;
-use zana::aws::{config, dynamodb, glue, rds};
+use zana::aws::{config, dynamodb, glue, rds, s3};
 
 #[tokio::main]
 async fn main() {
@@ -57,6 +57,13 @@ async fn main() {
         match matches.get_one::<String>("task").unwrap().as_str() {
             "list-tables" => dynamodb::list_tables(shared_config).await,
             _ => log::error!("No task provided!"),
+        }
+    } else if let Some(matches) = matches.subcommand_matches("s3") {
+        // AWS S3 logic
+        if let Some(matches) = matches.subcommand_matches("bucket") {
+            if matches.get_flag("list") {
+                s3::list_buckets(shared_config).await;
+            }
         }
     } else {
         log::error!("Faulty input is provided!")

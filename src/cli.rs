@@ -39,6 +39,13 @@ pub fn cmd() -> Command {
                 ),
         )
         .subcommand(
+            Command::new("s3").about("S3 API").subcommand(
+                Command::new("bucket")
+                    .about("S3 bucket API")
+                    .arg(arg!(-l --list "lists s3 buckets")),
+            ),
+        )
+        .subcommand(
             Command::new("rds").about("RDS API").arg(
                 arg!(--task <VALUE>)
                     .required(true)
