@@ -1,4 +1,4 @@
-use crate::common::util;
+use crate::util;
 use ini::ini;
 use std::collections::HashMap;
 
