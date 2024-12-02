@@ -1,4 +1,7 @@
+use std::fmt::Debug;
 use std::{env, io};
+use tabled::settings::Style;
+use tabled::{Table, Tabled};
 
 pub fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
@@ -35,4 +38,10 @@ pub fn print_environment_variables() {
     for (k, v) in env::vars() {
         println!("{}, {}", k, v);
     }
+}
+
+pub fn pretty_print<T: Tabled + Debug>(iterables: Vec<T>) {
+    let mut table = Table::new(&iterables);
+    table.with(Style::psql());
+    println!("{}", table);
 }
