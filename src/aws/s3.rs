@@ -1,14 +1,15 @@
 use aws_sdk_s3::{Client, Error};
 use aws_types::SdkConfig;
+use serde::Serialize;
 use tabled::Tabled;
 
-#[derive(Tabled, Debug)]
+#[derive(Tabled, Debug, Serialize)]
 pub struct S3Bucket {
     name: String,
     created_at: String,
     region: String,
 }
-#[derive(Tabled, Debug)]
+#[derive(Tabled, Debug, Serialize)]
 pub struct S3Object {
     obj_key: String,
     obj_last_modified_at: String,
@@ -17,7 +18,7 @@ pub struct S3Object {
     obj_storage_class: String,
 }
 
-#[derive(Tabled, Debug)]
+#[derive(Tabled, Debug, Serialize)]
 pub struct S3ObjectVersion {
     obj_key: String,
     obj_version_id: String,

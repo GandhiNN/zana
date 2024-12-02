@@ -1,3 +1,5 @@
+use csv::Writer;
+use std::error::Error;
 use std::fmt::Debug;
 use std::{env, io};
 use tabled::settings::Style;
@@ -44,4 +46,14 @@ pub fn pretty_print<T: Tabled + Debug>(iterables: Vec<T>) {
     let mut table = Table::new(&iterables);
     table.with(Style::psql());
     println!("{}", table);
+}
+
+pub fn write_csv<T: serde::Serialize>(iterables: Vec<T>) -> Result<(), Box<dyn Error>> {
+    let mut writer = Writer::from_writer(vec![]);
+    for row in &iterables {
+        writer.serialize(row)?
+    }
+    let data = String::from_utf8(writer.into_inner()?)?;
+    println!("{}", data);
+    Ok(())
 }

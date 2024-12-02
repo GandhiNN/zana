@@ -3,7 +3,7 @@ use env_logger::Builder;
 use log::LevelFilter;
 use std::io::Write;
 use zana::aws::{config, dynamodb, glue, rds, s3};
-use zana::util::pretty_print;
+use zana::util::{pretty_print, write_csv};
 
 #[tokio::main]
 async fn main() {
@@ -67,7 +67,7 @@ async fn main() {
                 if matches.get_flag("pretty") {
                     pretty_print(res.unwrap());
                 } else {
-                    println!("TODO: CSV record writer")
+                    let _ = write_csv(res.unwrap());
                 }
             }
         } else if let Some(matches) = matches.subcommand_matches("objects") {
@@ -77,14 +77,14 @@ async fn main() {
                 if matches.get_flag("pretty") {
                     pretty_print(res.unwrap());
                 } else {
-                    println!("TODO: CSV record writer")
+                    let _ = write_csv(res.unwrap());
                 }
             } else if matches.get_flag("versions") {
                 let res = s3::list_objects_versions(shared_config, bucket.to_string()).await;
                 if matches.get_flag("pretty") {
                     pretty_print(res.unwrap());
                 } else {
-                    println!("TODO: CSV record writer")
+                    let _ = write_csv(res.unwrap());
                 }
             }
         }
