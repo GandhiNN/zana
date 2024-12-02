@@ -49,9 +49,15 @@ async fn main() {
         }
     } else if let Some(matches) = matches.subcommand_matches("rds") {
         // AWS RDS logic
-        match matches.get_one::<String>("task").unwrap().as_str() {
-            "list-instances" => rds::list_instances(shared_config).await,
-            _ => log::error!("No task provided!"),
+        if let Some(matches) = matches.subcommand_matches("instances") {
+            if matches.get_flag("list") {
+                let res = rds::list_instances(shared_config).await;
+                if matches.get_flag("pretty") {
+                    pretty_print(res.unwrap());
+                } else {
+                    let _ = write_csv(res.unwrap());
+                }
+            }
         }
     } else if let Some(matches) = matches.subcommand_matches("dynamodb") {
         // AWS DynamoDB logic

@@ -57,10 +57,11 @@ pub fn cmd() -> Command {
                 ),
         )
         .subcommand(
-            Command::new("rds").about("RDS API").arg(
-                arg!(--task <VALUE>)
-                    .required(true)
-                    .value_parser(value_parser!(String)),
+            Command::new("rds").about("RDS API").subcommand(
+                Command::new("instances")
+                    .about("RDS Instances API")
+                    .arg(arg!(-l --list "lists RDS instances"))
+                    .arg(arg!(-p --pretty "pretty print output")),
             ),
         )
         .subcommand(
