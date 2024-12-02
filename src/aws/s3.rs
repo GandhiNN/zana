@@ -1,16 +1,15 @@
 use aws_sdk_s3::{Client, Error};
 use aws_types::SdkConfig;
-use tabled::settings::Style;
-use tabled::{Table, Tabled};
+use tabled::Tabled;
 
 #[derive(Tabled, Debug)]
-struct S3Bucket {
+pub struct S3Bucket {
     name: String,
     created_at: String,
     region: String,
 }
 #[derive(Tabled, Debug)]
-struct S3Object {
+pub struct S3Object {
     obj_key: String,
     obj_last_modified_at: String,
     obj_etag: String,
@@ -19,7 +18,7 @@ struct S3Object {
 }
 
 #[derive(Tabled, Debug)]
-struct S3ObjectVersion {
+pub struct S3ObjectVersion {
     obj_key: String,
     obj_version_id: String,
     obj_is_latest: bool,
@@ -34,13 +33,13 @@ async fn set_client(config: SdkConfig) -> Result<Client, Error> {
     Ok(client)
 }
 
-pub async fn list_buckets(config: SdkConfig) {
+pub async fn list_buckets(config: SdkConfig) -> Result<Vec<S3Bucket>, Error> {
     let client = set_client(config).await.unwrap();
     let mut list_buckets = client.list_buckets().into_paginator().send();
+    let mut s3_bucket: Vec<S3Bucket> = Vec::new();
     while let Some(list_buckets_output) = list_buckets.next().await {
         match list_buckets_output {
             Ok(list_buckets) => {
-                let mut s3_bucket: Vec<S3Bucket> = Vec::new();
                 let buckets = list_buckets.buckets();
                 for bucket in buckets {
                     let bucket_name = bucket.name().unwrap().to_string();
@@ -52,27 +51,25 @@ pub async fn list_buckets(config: SdkConfig) {
                         region: bucket_region,
                     });
                 }
-                let mut table = Table::new(&s3_bucket);
-                table.with(Style::psql());
-                println!("{}", table);
             }
             Err(e) => println!("{:?}", e),
         }
     }
+    Ok(s3_bucket)
 }
 
-pub async fn list_objects(config: SdkConfig, bucket: String) {
+pub async fn list_objects(config: SdkConfig, bucket: String) -> Result<Vec<S3Object>, Error> {
     let client = set_client(config).await.unwrap();
     let mut list_objects = client
         .list_objects_v2()
         .bucket(bucket)
         .into_paginator()
         .send();
+    let mut s3_objects: Vec<S3Object> = Vec::new();
     while let Some(list_objects_v2_output) = list_objects.next().await {
         match list_objects_v2_output {
             Ok(list_objects) => {
                 let objects = list_objects.contents();
-                let mut s3_objects: Vec<S3Object> = Vec::new();
                 for object in objects {
                     let key = object.key().unwrap().to_string();
                     let last_modified = object.last_modified().unwrap().to_string();
@@ -87,16 +84,17 @@ pub async fn list_objects(config: SdkConfig, bucket: String) {
                         obj_storage_class: storage_class,
                     });
                 }
-                let mut table = Table::new(&s3_objects);
-                table.with(Style::psql());
-                println!("{}", table);
             }
-            Err(e) => println!("{:?}", e),
+            Err(e) => return Err(e.into()),
         }
     }
+    Ok(s3_objects)
 }
 
-pub async fn list_objects_versions(config: SdkConfig, bucket: String) -> Result<Table, Error> {
+pub async fn list_objects_versions(
+    config: SdkConfig,
+    bucket: String,
+) -> Result<Vec<S3ObjectVersion>, Error> {
     let client = set_client(config).await.unwrap();
     let list_objects_versions = client.list_object_versions().bucket(bucket).send().await?;
     let mut s3_object_version: Vec<S3ObjectVersion> = Vec::new();
@@ -124,7 +122,5 @@ pub async fn list_objects_versions(config: SdkConfig, bucket: String) -> Result<
             obj_owner: owner,
         });
     }
-    let mut table = Table::new(&s3_object_version);
-    table.with(Style::psql());
-    Ok(table)
+    Ok(s3_object_version)
 }
