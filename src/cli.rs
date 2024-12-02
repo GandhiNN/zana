@@ -44,7 +44,8 @@ pub fn cmd() -> Command {
                 .subcommand(
                     Command::new("bucket")
                         .about("S3 bucket API")
-                        .arg(arg!(-l --list "lists s3 buckets")),
+                        .arg(arg!(-l --list "lists s3 buckets"))
+                        .arg(arg!(-p --pretty "pretty print output")),
                 )
                 .subcommand(
                     Command::new("objects")
