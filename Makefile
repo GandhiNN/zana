@@ -39,6 +39,10 @@ os:
 run:
 	@cargo run
 
+check:
+	@cargo check
+	@cargo clippy
+
 build:	
 	@echo "Building binary for ${OS} os with ${ARCH} architecture"
 	@cargo build --release
