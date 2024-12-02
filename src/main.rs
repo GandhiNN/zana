@@ -3,6 +3,7 @@ use env_logger::Builder;
 use log::LevelFilter;
 use std::io::Write;
 use zana::aws::{config, dynamodb, glue, rds, s3};
+use zana::util::pretty_print;
 
 #[tokio::main]
 async fn main() {
@@ -62,16 +63,26 @@ async fn main() {
         // AWS S3 logic
         if let Some(matches) = matches.subcommand_matches("bucket") {
             if matches.get_flag("list") {
-                s3::list_buckets(shared_config).await;
+                let res = s3::list_buckets(shared_config).await;
+                if matches.get_flag("pretty") {
+                    pretty_print(res.unwrap());
+                } else {
+                    println!("TODO: CSV record writer")
+                }
             }
         } else if let Some(matches) = matches.subcommand_matches("objects") {
             let bucket = matches.get_one::<String>("bucket").unwrap();
             if matches.get_flag("list") {
-                s3::list_objects(shared_config, bucket.to_string()).await;
-            } else if matches.get_flag("versions") {
-                let result = s3::list_objects_versions(shared_config, bucket.to_string()).await;
+                let res = s3::list_objects(shared_config, bucket.to_string()).await;
                 if matches.get_flag("pretty") {
-                    println!("{}", result.unwrap())
+                    pretty_print(res.unwrap());
+                } else {
+                    println!("TODO: CSV record writer")
+                }
+            } else if matches.get_flag("versions") {
+                let res = s3::list_objects_versions(shared_config, bucket.to_string()).await;
+                if matches.get_flag("pretty") {
+                    pretty_print(res.unwrap());
                 } else {
                     println!("TODO: CSV record writer")
                 }
