@@ -29,13 +29,15 @@ pub fn cmd() -> Command {
                 .subcommand(
                     Command::new("databases")
                         .about("Glue databases API")
-                        .arg(arg!(-l --list "lists glue databases").action(ArgAction::SetTrue)),
+                        .arg(arg!(-l --list "lists glue databases").action(ArgAction::SetTrue))
+                        .arg(arg!(-p --pretty "pretty print output")),
                 )
                 .subcommand(
                     Command::new("table")
                         .about("Glue table API")
                         .arg(arg!(-d --database <VALUE> "input database").required(true))
-                        .arg(arg!(-l --list "lists glue tables").action(ArgAction::SetTrue)),
+                        .arg(arg!(-l --list "lists glue tables").action(ArgAction::SetTrue))
+                        .arg(arg!(-p --pretty "pretty print output")),
                 ),
         )
         .subcommand(
