@@ -39,12 +39,22 @@ async fn main() {
             }
         } else if let Some(matches) = matches.subcommand_matches("databases") {
             if matches.get_flag("list") {
-                glue::list_databases(shared_config).await;
+                let res = glue::list_databases(shared_config).await;
+                if matches.get_flag("pretty") {
+                    pretty_print(res.unwrap());
+                } else {
+                    let _ = write_csv(res.unwrap());
+                }
             }
         } else if let Some(matches) = matches.subcommand_matches("table") {
             let db = matches.get_one::<String>("database").unwrap();
             if matches.get_flag("list") {
-                glue::list_tables(shared_config, db.to_string()).await;
+                let res = glue::list_tables(shared_config, db.to_string()).await;
+                if matches.get_flag("pretty") {
+                    pretty_print(res.unwrap());
+                } else {
+                    let _ = write_csv(res.unwrap());
+                }
             }
         }
     } else if let Some(matches) = matches.subcommand_matches("rds") {
