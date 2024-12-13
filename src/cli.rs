@@ -26,9 +26,12 @@ pub fn cmd() -> Command {
                         .about("Glue job API")
                         .arg(arg!(-l --list "lists glue jobs").action(ArgAction::SetTrue))
                         .subcommand(
-                            Command::new("runs").about("Glue job runs API").arg(
-                                arg!(-j --jobname <VALUE> "input glue job name").required(true),
-                            ),
+                            Command::new("runs")
+                                .about("Glue job runs API")
+                                .arg(
+                                    arg!(-j --jobname <VALUE> "input glue job name").required(true),
+                                )
+                                .arg(arg!(-p --pretty "pretty print output")),
                         ),
                 )
                 .subcommand(

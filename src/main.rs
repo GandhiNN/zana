@@ -36,7 +36,12 @@ async fn main() {
         if let Some(matches) = matches.subcommand_matches("job") {
             if let Some(matches) = matches.subcommand_matches("runs") {
                 let glue_job_name = matches.get_one::<String>("jobname").unwrap().to_string();
-                glue::get_job_runs(shared_config, glue_job_name).await;
+                let res = glue::get_job_runs(shared_config, glue_job_name).await;
+                if matches.get_flag("pretty") {
+                    pretty_print(res.unwrap());
+                } else {
+                    let _ = write_csv(res.unwrap());
+                }
             } else if matches.get_flag("list") {
                 glue::list_jobs(shared_config).await;
             }

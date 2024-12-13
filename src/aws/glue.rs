@@ -25,6 +25,18 @@ pub struct GlueDatabase {
     db_create_time: String,
 }
 
+#[derive(Tabled, Debug, Serialize)]
+pub struct GlueJobRun {
+    name: String,
+    version: String,
+    mode: String,
+    start_time: String,
+    completed_time: String,
+    modified_time: String,
+    state: String,
+    dpu_seconds: f64,
+}
+
 async fn set_client(config: SdkConfig) -> Result<Client, Error> {
     let client = Client::new(&config);
     Ok(client)
@@ -92,21 +104,35 @@ pub async fn list_jobs(config: SdkConfig) {
     }
 }
 
-pub async fn get_job_runs(config: SdkConfig, job_name: String) {
+pub async fn get_job_runs(config: SdkConfig, job_name: String) -> Result<Vec<GlueJobRun>, Error> {
     let client = set_client(config).await.unwrap();
     let mut job_runs = client
         .get_job_runs()
         .job_name(job_name)
         .into_paginator()
         .send();
+    let mut glue_job_runs: Vec<GlueJobRun> = Vec::new();
     while let Some(job_runs_output) = job_runs.next().await {
         match job_runs_output {
-            Ok(job_runs) => {
-                println!("{:#?}", job_runs)
+            Ok(v) => {
+                let runs = v.job_runs();
+                for run in runs {
+                    glue_job_runs.push(GlueJobRun {
+                        name: run.job_name().unwrap().to_string(),
+                        version: run.glue_version().unwrap().to_string(),
+                        mode: run.job_mode().unwrap().to_string(),
+                        start_time: run.started_on().unwrap().to_string(),
+                        completed_time: run.completed_on().unwrap().to_string(),
+                        modified_time: run.last_modified_on().unwrap().to_string(),
+                        state: run.job_run_state().unwrap().to_string(),
+                        dpu_seconds: run.dpu_seconds().unwrap_or_default(),
+                    })
+                }
             }
             Err(e) => println!("{:#?}", e),
         }
     }
+    Ok(glue_job_runs)
 }
 
 pub async fn list_databases(config: SdkConfig) -> Result<Vec<GlueDatabase>, Error> {
