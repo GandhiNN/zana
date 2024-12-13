@@ -56,29 +56,21 @@ pub async fn list_tables(config: SdkConfig, database: String) -> Result<Vec<Glue
                 let tables = list_tables.table_list();
                 println!("tableName,databaseName,description,owner,createTime,updateTime,lastAccessTime,averageRecordSizeInBytes,recordCount,sizeKeyInBytes");
                 for table in tables {
-                    let tbl_name = table.name().to_string();
-                    let db_name = table.database_name().unwrap_or_default().to_string();
-                    let desc = table.description().unwrap_or_default().to_string();
-                    let owner = table.owner().unwrap_or_default().to_string();
-                    let create_time = table.create_time().unwrap().to_string();
-                    let update_time = table.update_time().unwrap().to_string();
-                    let last_access_time = table.last_access_time().unwrap().to_string();
                     let table_params = table.storage_descriptor().unwrap().parameters().unwrap();
-                    let avg_record_size =
-                        table_params.get("averageRecordSize").unwrap().to_string();
-                    let record_count = table_params.get("recordCount").unwrap().to_string();
-                    let size_key = table_params.get("sizeKey").unwrap().to_string();
                     glue_tables.push(GlueTable {
-                        table_name: tbl_name,
-                        database_name: db_name,
-                        description: desc,
-                        table_owner: owner,
-                        table_create_time: create_time,
-                        table_update_time: update_time,
-                        table_last_access_time: last_access_time,
-                        table_record_count: record_count,
-                        table_avg_record_size: avg_record_size,
-                        table_size_key: size_key,
+                        table_name: table.name().to_string(),
+                        database_name: table.database_name().unwrap_or_default().to_string(),
+                        description: table.description().unwrap_or_default().to_string(),
+                        table_owner: table.owner().unwrap_or_default().to_string(),
+                        table_create_time: table.create_time().unwrap().to_string(),
+                        table_update_time: table.update_time().unwrap().to_string(),
+                        table_last_access_time: table.last_access_time().unwrap().to_string(),
+                        table_record_count: table_params
+                            .get("averageRecordSize")
+                            .unwrap()
+                            .to_string(),
+                        table_avg_record_size: table_params.get("recordCount").unwrap().to_string(),
+                        table_size_key: table_params.get("sizeKey").unwrap().to_string(),
                     });
                 }
             }
