@@ -33,8 +33,11 @@ async fn main() {
     // Match subcommands input
     if let Some(matches) = matches.subcommand_matches("glue") {
         // AWS Glue logic
-        if let Some(matches) = matches.subcommand_matches("jobs") {
-            if matches.get_flag("list") {
+        if let Some(matches) = matches.subcommand_matches("job") {
+            if let Some(matches) = matches.subcommand_matches("runs") {
+                let glue_job_name = matches.get_one::<String>("jobname").unwrap().to_string();
+                glue::get_job_runs(shared_config, glue_job_name).await;
+            } else if matches.get_flag("list") {
                 glue::list_jobs(shared_config).await;
             }
         } else if let Some(matches) = matches.subcommand_matches("databases") {

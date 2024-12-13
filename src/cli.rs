@@ -22,9 +22,14 @@ pub fn cmd() -> Command {
             Command::new("glue")
                 .about("Glue API")
                 .subcommand(
-                    Command::new("jobs")
-                        .about("Glue jobs API")
-                        .arg(arg!(-l --list "lists glue jobs").action(ArgAction::SetTrue)),
+                    Command::new("job")
+                        .about("Glue job API")
+                        .arg(arg!(-l --list "lists glue jobs").action(ArgAction::SetTrue))
+                        .subcommand(
+                            Command::new("runs").about("Glue job runs API").arg(
+                                arg!(-j --jobname <VALUE> "input glue job name").required(true),
+                            ),
+                        ),
                 )
                 .subcommand(
                     Command::new("databases")

@@ -92,6 +92,23 @@ pub async fn list_jobs(config: SdkConfig) {
     }
 }
 
+pub async fn get_job_runs(config: SdkConfig, job_name: String) {
+    let client = set_client(config).await.unwrap();
+    let mut job_runs = client
+        .get_job_runs()
+        .job_name(job_name)
+        .into_paginator()
+        .send();
+    while let Some(job_runs_output) = job_runs.next().await {
+        match job_runs_output {
+            Ok(job_runs) => {
+                println!("{:#?}", job_runs)
+            }
+            Err(e) => println!("{:#?}", e),
+        }
+    }
+}
+
 pub async fn list_databases(config: SdkConfig) -> Result<Vec<GlueDatabase>, Error> {
     let client = set_client(config).await.unwrap();
     let mut list_databases = client.get_databases().into_paginator().send();
