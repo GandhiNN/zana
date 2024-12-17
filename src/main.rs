@@ -30,89 +30,145 @@ async fn main() {
     log::info!("Using shared config with profile name: {}", aws_profile);
     let shared_config: aws_types::SdkConfig = config::set_config(aws_profile, *timeout).await;
 
-    // Match subcommands input
-    if let Some(matches) = matches.subcommand_matches("glue") {
-        // AWS Glue logic
-        if let Some(matches) = matches.subcommand_matches("job") {
-            if let Some(matches) = matches.subcommand_matches("runs") {
-                let glue_job_name = matches.get_one::<String>("jobname").unwrap().to_string();
-                let res = glue::get_job_runs(shared_config, glue_job_name).await;
-                if matches.get_flag("pretty") {
-                    pretty_print(res.unwrap());
-                } else {
-                    let _ = write_csv(res.unwrap());
+    // Match commands and subcommands input
+    match matches.subcommand() {
+        Some(("glue", sub_matches)) => {
+            let glue_command = sub_matches.subcommand().unwrap();
+            match glue_command {
+                ("job", sub_matches) => {
+                    let job_subcommands = sub_matches.subcommand().unwrap();
+                    match job_subcommands {
+                        ("runs", sub_matches) => {
+                            let runs_subcommands = sub_matches.subcommand().unwrap();
+                            match runs_subcommands {
+                                ("list", flags) => {
+                                    let glue_job_name =
+                                        flags.get_one::<String>("jobname").unwrap().to_string();
+                                    let res =
+                                        glue::get_job_runs(shared_config, glue_job_name).await;
+                                    if flags.get_flag("pretty") {
+                                        pretty_print(res.unwrap());
+                                    } else if flags.get_flag("csv") {
+                                        let _ = write_csv(res.unwrap());
+                                    } else {
+                                        log::error!("Unknown input")
+                                    }
+                                }
+                                _ => log::error!("Unknown input"),
+                            }
+                        }
+                        (name, _) => {
+                            unreachable!("Unknown subcommand `{name}`")
+                        }
+                    }
                 }
-            } else if matches.get_flag("list") {
-                glue::list_jobs(shared_config).await;
-            }
-        } else if let Some(matches) = matches.subcommand_matches("databases") {
-            if matches.get_flag("list") {
-                let res = glue::list_databases(shared_config).await;
-                if matches.get_flag("pretty") {
-                    pretty_print(res.unwrap());
-                } else {
-                    let _ = write_csv(res.unwrap());
+                ("databases", sub_matches) => {
+                    let databases_subcommands = sub_matches.subcommand().unwrap();
+                    match databases_subcommands {
+                        ("list", flags) => {
+                            let res = glue::list_databases(shared_config).await;
+                            if flags.get_flag("pretty") {
+                                pretty_print(res.unwrap());
+                            } else if flags.get_flag("csv") {
+                                let _ = write_csv(res.unwrap());
+                            } else {
+                                log::error!("Unknown input")
+                            }
+                        }
+                        _ => log::error!("Unknown input"),
+                    }
                 }
-            }
-        } else if let Some(matches) = matches.subcommand_matches("table") {
-            let db = matches.get_one::<String>("database").unwrap();
-            if matches.get_flag("list") {
-                let res = glue::list_tables(shared_config, db.to_string()).await;
-                if matches.get_flag("pretty") {
-                    pretty_print(res.unwrap());
-                } else {
-                    let _ = write_csv(res.unwrap());
+                ("table", sub_matches) => {
+                    let table_subcommands = sub_matches.subcommand().unwrap();
+                    match table_subcommands {
+                        ("list", flags) => {
+                            let db = flags.get_one::<String>("database").unwrap();
+                            let res = glue::list_tables(shared_config, db.to_string()).await;
+                            if flags.get_flag("pretty") {
+                                pretty_print(res.unwrap());
+                            } else if flags.get_flag("csv") {
+                                let _ = write_csv(res.unwrap());
+                            } else {
+                                log::error!("Unknown input")
+                            }
+                        }
+                        _ => log::error!("Unknown input"),
+                    }
                 }
+                _ => unreachable!(),
             }
         }
-    } else if let Some(matches) = matches.subcommand_matches("rds") {
-        // AWS RDS logic
-        if let Some(matches) = matches.subcommand_matches("instances") {
-            if matches.get_flag("list") {
-                let res = rds::list_instances(shared_config).await;
-                if matches.get_flag("pretty") {
-                    pretty_print(res.unwrap());
-                } else {
-                    let _ = write_csv(res.unwrap());
+        Some(("rds", sub_matches)) => {
+            let rds_command = sub_matches.subcommand().unwrap();
+            match rds_command {
+                ("instances", flags) => {
+                    let res = rds::list_instances(shared_config).await;
+                    if flags.get_flag("pretty") {
+                        pretty_print(res.unwrap());
+                    } else if flags.get_flag("csv") {
+                        let _ = write_csv(res.unwrap());
+                    } else {
+                        log::error!("Unknown input")
+                    }
                 }
+                _ => log::error!("Unknown input"),
             }
         }
-    } else if let Some(matches) = matches.subcommand_matches("dynamodb") {
-        // AWS DynamoDB logic
-        match matches.get_one::<String>("task").unwrap().as_str() {
+        Some(("s3", sub_matches)) => {
+            let s3_command = sub_matches.subcommand().unwrap();
+            match s3_command {
+                ("bucket", sub_matches) => {
+                    let bucket_subcommands = sub_matches.subcommand().unwrap();
+                    match bucket_subcommands {
+                        ("list", flags) => {
+                            let res = s3::list_buckets(shared_config).await;
+                            if flags.get_flag("pretty") {
+                                pretty_print(res.unwrap());
+                            } else if flags.get_flag("csv") {
+                                let _ = write_csv(res.unwrap());
+                            } else {
+                                log::error!("Unknown input")
+                            }
+                        }
+                        _ => log::error!("Unknown input"),
+                    }
+                }
+                ("objects", sub_matches) => {
+                    let objects_subcommands = sub_matches.subcommand().unwrap();
+                    match objects_subcommands {
+                        ("list", flags) => {
+                            let bucket = flags.get_one::<String>("bucket").unwrap();
+                            let res = s3::list_objects(shared_config, bucket.to_string()).await;
+                            if flags.get_flag("pretty") {
+                                pretty_print(res.unwrap());
+                            } else if flags.get_flag("csv") {
+                                let _ = write_csv(res.unwrap());
+                            } else {
+                                log::error!("Unknown input")
+                            }
+                        }
+                        ("versions", flags) => {
+                            let bucket = flags.get_one::<String>("bucket").unwrap();
+                            let res =
+                                s3::list_objects_versions(shared_config, bucket.to_string()).await;
+                            if flags.get_flag("pretty") {
+                                pretty_print(res.unwrap());
+                            } else if flags.get_flag("csv") {
+                                let _ = write_csv(res.unwrap());
+                            } else {
+                                log::error!("Unknown input")
+                            }
+                        }
+                        _ => log::error!("Unknown input"),
+                    }
+                }
+                _ => log::error!("Unknown input"),
+            }
+        }
+        Some(("dynamodb", flags)) => match flags.get_one::<String>("task").unwrap().as_str() {
             "list-tables" => dynamodb::list_tables(shared_config).await,
             _ => log::error!("No task provided!"),
-        }
-    } else if let Some(matches) = matches.subcommand_matches("s3") {
-        // AWS S3 logic
-        if let Some(matches) = matches.subcommand_matches("bucket") {
-            if matches.get_flag("list") {
-                let res = s3::list_buckets(shared_config).await;
-                if matches.get_flag("pretty") {
-                    pretty_print(res.unwrap());
-                } else {
-                    let _ = write_csv(res.unwrap());
-                }
-            }
-        } else if let Some(matches) = matches.subcommand_matches("objects") {
-            let bucket = matches.get_one::<String>("bucket").unwrap();
-            if matches.get_flag("list") {
-                let res = s3::list_objects(shared_config, bucket.to_string()).await;
-                if matches.get_flag("pretty") {
-                    pretty_print(res.unwrap());
-                } else {
-                    let _ = write_csv(res.unwrap());
-                }
-            } else if matches.get_flag("versions") {
-                let res = s3::list_objects_versions(shared_config, bucket.to_string()).await;
-                if matches.get_flag("pretty") {
-                    pretty_print(res.unwrap());
-                } else {
-                    let _ = write_csv(res.unwrap());
-                }
-            }
-        }
-    } else {
-        log::error!("Faulty input is provided!")
+        },
+        _ => log::error!("Faulty input is provided!"),
     }
 }
