@@ -28,11 +28,6 @@ pub struct GlueDatabase {
 #[derive(Tabled, Debug, Serialize)]
 pub struct GlueJobRun {
     name: String,
-    version: String,
-    mode: String,
-    start_time: String,
-    completed_time: String,
-    modified_time: String,
     state: String,
     dpu_seconds: f64,
 }
@@ -54,7 +49,6 @@ pub async fn list_tables(config: SdkConfig, database: String) -> Result<Vec<Glue
         match list_tables_output {
             Ok(list_tables) => {
                 let tables = list_tables.table_list();
-                println!("tableName,databaseName,description,owner,createTime,updateTime,lastAccessTime,averageRecordSizeInBytes,recordCount,sizeKeyInBytes");
                 for table in tables {
                     let table_params = table.storage_descriptor().unwrap().parameters().unwrap();
                     glue_tables.push(GlueTable {
@@ -111,11 +105,6 @@ pub async fn get_job_runs(config: SdkConfig, job_name: String) -> Result<Vec<Glu
                 for run in runs {
                     glue_job_runs.push(GlueJobRun {
                         name: run.job_name().unwrap().to_string(),
-                        version: run.glue_version().unwrap().to_string(),
-                        mode: run.job_mode().unwrap().to_string(),
-                        start_time: run.started_on().unwrap().to_string(),
-                        completed_time: run.completed_on().unwrap().to_string(),
-                        modified_time: run.last_modified_on().unwrap().to_string(),
                         state: run.job_run_state().unwrap().to_string(),
                         dpu_seconds: run.dpu_seconds().unwrap_or_default(),
                     })

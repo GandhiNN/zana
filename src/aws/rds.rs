@@ -28,19 +28,13 @@ pub async fn list_instances(config: SdkConfig) -> Result<Vec<DBInstance>, Error>
     let mut db_instances: Vec<DBInstance> = Vec::new();
     match instances_list {
         Ok(instances) => {
-            // println!("id,class,engine,status,endpoint");
             for instance in instances.db_instances() {
-                let db_id = instance.db_instance_identifier().unwrap().to_string();
-                let db_class = instance.db_instance_class().unwrap().to_string();
-                let db_engine = instance.engine().unwrap().to_string();
-                let db_status = instance.db_instance_status().unwrap().to_string();
-                let db_endpoint = instance.endpoint().unwrap().address.clone().unwrap();
                 db_instances.push(DBInstance {
-                    id: db_id,
-                    class: db_class,
-                    engine: db_engine,
-                    status: db_status,
-                    endpoint: db_endpoint,
+                    id: instance.db_instance_identifier().unwrap().to_string(),
+                    class: instance.db_instance_class().unwrap().to_string(),
+                    engine: instance.engine().unwrap().to_string(),
+                    status: instance.db_instance_status().unwrap().to_string(),
+                    endpoint: instance.endpoint().unwrap().address.clone().unwrap(),
                 });
             }
         }

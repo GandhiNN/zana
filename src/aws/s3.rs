@@ -43,13 +43,10 @@ pub async fn list_buckets(config: SdkConfig) -> Result<Vec<S3Bucket>, Error> {
             Ok(list_buckets) => {
                 let buckets = list_buckets.buckets();
                 for bucket in buckets {
-                    let bucket_name = bucket.name().unwrap().to_string();
-                    let creation_date = bucket.creation_date().unwrap().to_string();
-                    let bucket_region = bucket.bucket_region().unwrap_or("None").to_string();
                     s3_bucket.push(S3Bucket {
-                        name: bucket_name,
-                        created_at: creation_date,
-                        region: bucket_region,
+                        name: bucket.name().unwrap().to_string(),
+                        created_at: bucket.creation_date().unwrap().to_string(),
+                        region: bucket.bucket_region().unwrap_or("None").to_string(),
                     });
                 }
             }
@@ -72,17 +69,12 @@ pub async fn list_objects(config: SdkConfig, bucket: String) -> Result<Vec<S3Obj
             Ok(list_objects) => {
                 let objects = list_objects.contents();
                 for object in objects {
-                    let key = object.key().unwrap().to_string();
-                    let last_modified = object.last_modified().unwrap().to_string();
-                    let etag = object.e_tag().unwrap().to_string();
-                    let size = object.size().unwrap();
-                    let storage_class = object.storage_class().unwrap().to_string();
                     s3_objects.push(S3Object {
-                        obj_key: key,
-                        obj_last_modified_at: last_modified,
-                        obj_etag: etag,
-                        obj_size: size,
-                        obj_storage_class: storage_class,
+                        obj_key: object.key().unwrap().to_string(),
+                        obj_last_modified_at: object.last_modified().unwrap().to_string(),
+                        obj_etag: object.e_tag().unwrap().to_string(),
+                        obj_size: object.size().unwrap(),
+                        obj_storage_class: object.storage_class().unwrap().to_string(),
                     });
                 }
             }
@@ -100,27 +92,19 @@ pub async fn list_objects_versions(
     let list_objects_versions = client.list_object_versions().bucket(bucket).send().await?;
     let mut s3_object_version: Vec<S3ObjectVersion> = Vec::new();
     for version in list_objects_versions.versions() {
-        let etag = version.e_tag().unwrap_or_default().to_string();
-        let size = version.size().unwrap_or_default();
-        let key = version.key().unwrap_or_default().to_string();
-        let version_id = version.version_id().unwrap_or_default().to_string();
-        let is_latest = version.is_latest().unwrap();
-        let last_modified = version.last_modified().unwrap().to_string();
-        let owner = version
-            .owner()
-            .unwrap()
-            .display_name()
-            .unwrap_or_default()
-            .to_string();
-
         s3_object_version.push(S3ObjectVersion {
-            obj_key: key,
-            obj_version_id: version_id,
-            obj_is_latest: is_latest,
-            obj_last_modified_date: last_modified,
-            obj_size: size,
-            obj_etag: etag,
-            obj_owner: owner,
+            obj_key: version.key().unwrap_or_default().to_string(),
+            obj_version_id: version.version_id().unwrap_or_default().to_string(),
+            obj_is_latest: version.is_latest().unwrap(),
+            obj_last_modified_date: version.last_modified().unwrap().to_string(),
+            obj_size: version.size().unwrap_or_default(),
+            obj_etag: version.e_tag().unwrap_or_default().to_string(),
+            obj_owner: version
+                .owner()
+                .unwrap()
+                .display_name()
+                .unwrap_or_default()
+                .to_string(),
         });
     }
     Ok(s3_object_version)
