@@ -1,6 +1,7 @@
 use aws_config::default_provider::credentials::DefaultCredentialsChain;
 use aws_config::default_provider::region::DefaultRegionChain;
 use aws_config::timeout::TimeoutConfig;
+use aws_types::region::Region;
 use configparser::ini::Ini;
 use directories::BaseDirs;
 use std::env::set_var;
@@ -12,7 +13,7 @@ pub struct AWSConfigFile {
 }
 
 impl AWSConfigFile {
-    pub fn default() -> Self {
+    pub fn default_provider() -> Self {
         let base_dirs = BaseDirs::new().unwrap();
         let home_dir = base_dirs.home_dir().to_string_lossy().to_string();
         let config_path = format!("{}/.aws/credentials", home_dir);
@@ -81,18 +82,18 @@ pub async fn set_config(
     credentials_config: AWSCredentialsConfig,
     timeout: u64,
 ) -> aws_types::SdkConfig {
-    // Set the AWS Region
+    // Load AWS credentials chain
     let region = DefaultRegionChain::builder()
         .profile_name(credentials_config.profile.as_str())
         .build()
         .region()
         .await;
-    // Load the credentials to be used
     let credentials = DefaultCredentialsChain::builder()
         .profile_name(credentials_config.profile.as_str())
         .region(region.clone())
         .build()
         .await;
+
     // Set timeout config
     let timeout_config = TimeoutConfig::builder()
         .connect_timeout(time::Duration::from_secs(timeout))
@@ -119,7 +120,7 @@ pub async fn set_config(
     aws_config::from_env()
         .credentials_provider(credentials)
         .profile_name(credentials_config.profile)
-        .region(region)
+        .region(Region::new(credentials_config.region))
         .timeout_config(timeout_config)
         .load()
         .await
