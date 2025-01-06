@@ -25,6 +25,7 @@ tabled = "0.16.0"
 csv = "1.3.1"
 serde = {version = "1.0.215", features = ["derive"] }
 aws-sdk-s3 = "1.63.0"
+directories = "5.0.1"
 
 [profile.release]
 opt-level = 'z'     # Optimize for size
