@@ -1,3 +1,4 @@
+use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
 use crate::aws::{config, dynamodb, glue, rds, s3};
 use crate::cli;
 use crate::util::{pretty_print, write_csv};
@@ -109,15 +110,19 @@ pub fn cmd() -> Command {
         )
 }
 
-pub async fn run() {
+pub async fn run(conf: AWSConfigFile) {
     // Read from CLI arguments
     let matches = cli::cmd().get_matches();
 
     // Parse global arguments to propagate to subcommands
-    let aws_profile = matches.get_one::<String>("profile").unwrap();
+    let profile = matches.get_one::<String>("profile").unwrap();
     let timeout: &u64 = matches.get_one::<u64>("timeout").unwrap();
-    log::info!("Using shared config with profile name: {}", aws_profile);
-    let shared_config: aws_types::SdkConfig = config::set_config(aws_profile, *timeout).await;
+
+    // Load AWS Credentials Configuration
+    log::info!("Using shared config with profile name: {}", profile);
+    let aws_credentials_config = AWSCredentialsConfig::new(conf, profile);
+    let shared_config: aws_types::SdkConfig =
+        config::set_config(aws_credentials_config, *timeout).await;
 
     // Match commands and subcommands input
     match matches.subcommand() {

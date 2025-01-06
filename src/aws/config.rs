@@ -2,65 +2,97 @@ use aws_config::default_provider::credentials::DefaultCredentialsChain;
 use aws_config::default_provider::region::DefaultRegionChain;
 use aws_config::timeout::TimeoutConfig;
 use configparser::ini::Ini;
+use directories::BaseDirs;
 use std::env::set_var;
-use std::error::Error;
 use std::string::String;
 use std::time;
 
-const PATH: &str = "config.ini";
-
-pub fn load_credentials_config(
-    profile_name: &str,
-) -> Result<(String, String, String, String), Box<dyn Error>> {
-    let mut config = Ini::new();
-    let cfg_map = config.load(PATH)?;
-    let region = cfg_map
-        .get(profile_name)
-        .unwrap()
-        .get("region")
-        .unwrap()
-        .clone()
-        .unwrap();
-    let access_key_id = cfg_map
-        .get(profile_name)
-        .unwrap()
-        .get("aws_access_key_id")
-        .unwrap()
-        .clone()
-        .unwrap();
-    let secret_access_key = cfg_map
-        .get(profile_name)
-        .unwrap()
-        .get("aws_secret_access_key")
-        .unwrap()
-        .clone()
-        .unwrap();
-    let session_token = cfg_map
-        .get(profile_name)
-        .unwrap()
-        .get("aws_session_token")
-        .unwrap()
-        .clone()
-        .unwrap();
-
-    Ok((region, access_key_id, secret_access_key, session_token))
+pub struct AWSConfigFile {
+    config_file_path: String,
 }
 
-pub async fn set_config(aws_profile: &str, timeout: u64) -> aws_types::SdkConfig {
+impl AWSConfigFile {
+    pub fn default() -> Self {
+        let base_dirs = BaseDirs::new().unwrap();
+        let home_dir = base_dirs.home_dir().to_string_lossy().to_string();
+        let config_path = format!("{}/.aws/credentials", home_dir);
+        Self {
+            config_file_path: config_path,
+        }
+    }
+    pub fn from_file(file_path: &str) -> Self {
+        Self {
+            config_file_path: file_path.to_string(),
+        }
+    }
+}
+
+pub struct AWSCredentialsConfig {
+    profile: String,
+    region: String,
+    access_key_id: String,
+    secret_access_key: String,
+    session_token: String,
+}
+
+impl AWSCredentialsConfig {
+    pub fn new(config: AWSConfigFile, profile: &str) -> Self {
+        let mut config_reader = Ini::new();
+        let config_map = config_reader.load(config.config_file_path).unwrap();
+        let region = config_map
+            .get(profile)
+            .unwrap()
+            .get("region")
+            .unwrap()
+            .clone()
+            .unwrap();
+        let access_key_id = config_map
+            .get(profile)
+            .unwrap()
+            .get("aws_access_key_id")
+            .unwrap()
+            .clone()
+            .unwrap();
+        let secret_access_key = config_map
+            .get(profile)
+            .unwrap()
+            .get("aws_secret_access_key")
+            .unwrap()
+            .clone()
+            .unwrap();
+        let session_token = config_map
+            .get(profile)
+            .unwrap()
+            .get("aws_session_token")
+            .unwrap()
+            .clone()
+            .unwrap();
+        Self {
+            profile: profile.to_owned(),
+            region,
+            access_key_id,
+            secret_access_key,
+            session_token,
+        }
+    }
+}
+
+pub async fn set_config(
+    credentials_config: AWSCredentialsConfig,
+    timeout: u64,
+) -> aws_types::SdkConfig {
     // Set the AWS Region
     let region = DefaultRegionChain::builder()
-        .profile_name(aws_profile)
+        .profile_name(credentials_config.profile.as_str())
         .build()
         .region()
         .await;
-
     // Load the credentials to be used
     let credentials = DefaultCredentialsChain::builder()
-        .profile_name(aws_profile)
+        .profile_name(credentials_config.profile.as_str())
         .region(region.clone())
         .build()
         .await;
-
     // Set timeout config
     let timeout_config = TimeoutConfig::builder()
         .connect_timeout(time::Duration::from_secs(timeout))
@@ -68,23 +100,26 @@ pub async fn set_config(aws_profile: &str, timeout: u64) -> aws_types::SdkConfig
         .operation_attempt_timeout(time::Duration::from_secs(timeout * 3 * 3))
         .build();
 
-    // Configure our AWS credentials as process-scoped env var
-    // config.ini must not use double-quoting
-    match load_credentials_config(aws_profile) {
-        Ok(res) => {
-            set_var("AWS_REGION", res.0);
-            set_var("AWS_ACCESS_KEY_ID", res.1);
-            set_var("AWS_SECRET_ACCESS_KEY", res.2);
-            set_var("AWS_SESSION_TOKEN", res.3);
-        }
-        Err(e) => println!("{:?}", e),
-    }
+    // Configure AWS credentials as process-scoped env var
+    set_var("AWS_REGION", credentials_config.region.as_str());
+    set_var(
+        "AWS_ACCESS_KEY_ID",
+        credentials_config.access_key_id.as_str(),
+    );
+    set_var(
+        "AWS_SECRET_ACCESS_KEY",
+        credentials_config.secret_access_key.as_str(),
+    );
+    set_var(
+        "AWS_SESSION_TOKEN",
+        credentials_config.session_token.as_str(),
+    );
 
     // set AWS config
     aws_config::from_env()
         .credentials_provider(credentials)
-        .profile_name(aws_profile)
-        .region("eu-west-1")
+        .profile_name(credentials_config.profile)
+        .region(region)
         .timeout_config(timeout_config)
         .load()
         .await

@@ -2,7 +2,10 @@ use chrono::Local;
 use env_logger::Builder;
 use log::LevelFilter;
 use std::io::Write;
+use zana::aws::config::AWSConfigFile;
 use zana::cli;
+
+const PATH: &str = "config.ini";
 
 #[tokio::main]
 async fn main() {
@@ -20,6 +23,9 @@ async fn main() {
         .filter(None, LevelFilter::Info)
         .init();
 
+    // Load Configuration file
+    let aws_config_file = AWSConfigFile::from_file(PATH);
+
     // Handle CLI arguments
-    cli::run().await;
+    cli::run(aws_config_file).await;
 }
