@@ -3,7 +3,6 @@ use aws_config::default_provider::region::DefaultRegionChain;
 use aws_config::timeout::TimeoutConfig;
 use aws_types::region::Region;
 use configparser::ini::Ini;
-use directories::BaseDirs;
 use std::env::set_var;
 use std::string::String;
 use std::time;
@@ -13,17 +12,9 @@ pub struct AWSConfigFile {
 }
 
 impl AWSConfigFile {
-    pub fn default_provider() -> Self {
-        let base_dirs = BaseDirs::new().unwrap();
-        let home_dir = base_dirs.home_dir().to_string_lossy().to_string();
-        let config_path = format!("{}/.aws/credentials", home_dir);
+    pub fn new(config_path: String) -> Self {
         Self {
             config_file_path: config_path,
-        }
-    }
-    pub fn from_file(file_path: &str) -> Self {
-        Self {
-            config_file_path: file_path.to_string(),
         }
     }
 }
