@@ -4,6 +4,11 @@ use serde::Serialize;
 use tabled::Tabled;
 
 #[derive(Tabled, Debug, Serialize)]
+pub struct GlueJobNames {
+    job_name: String,
+}
+
+#[derive(Tabled, Debug, Serialize)]
 pub struct GlueTable {
     table_name: String,
     database_name: String,
@@ -74,20 +79,25 @@ pub async fn list_tables(config: SdkConfig, database: String) -> Result<Vec<Glue
     Ok(glue_tables)
 }
 
-pub async fn list_jobs(config: SdkConfig) {
+pub async fn list_jobs(config: SdkConfig) -> Result<Vec<GlueJobNames>, Error> {
     let client = set_client(config).await.unwrap();
     let mut list_jobs = client.list_jobs().into_paginator().send();
+    let mut glue_job_names: Vec<GlueJobNames> = Vec::new();
     while let Some(list_jobs_output) = list_jobs.next().await {
         match list_jobs_output {
             Ok(list_jobs) => {
                 let names = list_jobs.job_names();
+
                 for name in names {
-                    println!("{}", name);
+                    glue_job_names.push(GlueJobNames {
+                        job_name: name.to_owned(),
+                    });
                 }
             }
             Err(e) => println!("{:?}", e),
         }
     }
+    Ok(glue_job_names)
 }
 
 pub async fn get_job_runs(config: SdkConfig, job_name: String) -> Result<Vec<GlueJobRun>, Error> {

@@ -146,8 +146,15 @@ pub async fn run() {
                                 _ => log::error!("Unknown input"),
                             }
                         }
-                        ("list", _) => {
-                            let _ = glue::list_jobs(shared_config).await;
+                        ("list", flags) => {
+                            let res = glue::list_jobs(shared_config).await;
+                            if flags.get_flag("pretty") {
+                                pretty_print(res.unwrap());
+                            } else if flags.get_flag("csv") {
+                                let _ = write_csv(res.unwrap());
+                            } else {
+                                log::error!("Unknown input")
+                            }
                         }
                         (name, _) => {
                             unreachable!("Unknown subcommand `{name}`")
