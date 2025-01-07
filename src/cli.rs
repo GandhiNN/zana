@@ -103,10 +103,15 @@ pub fn cmd() -> Command {
             ),
         )
         .subcommand(
-            Command::new("dynamodb").about("DynamoDB API").arg(
-                arg!(--task <VALUE>)
-                    .required(true)
-                    .value_parser(value_parser!(String)),
+            Command::new("dynamodb").about("DynamoDB API").subcommand(
+                Command::new("tables")
+                    .about("DynamoDB Tables API")
+                    .subcommand(
+                        Command::new("list")
+                            .arg(arg!(-p --pretty "Pretty print output"))
+                            .arg(arg!(-c --csv "Print output as CSV"))
+                            .arg_required_else_help(true),
+                    ),
             ),
         )
 }
@@ -270,10 +275,28 @@ pub async fn run(conf: AWSConfigFile) {
                 _ => error!("Unknown input"),
             }
         }
-        Some(("dynamodb", flags)) => match flags.get_one::<String>("task").unwrap().as_str() {
-            "list-tables" => dynamodb::list_tables(shared_config).await,
-            _ => error!("No task provided!"),
-        },
+        Some(("dynamodb", sub_matches)) => {
+            let ddb_command = sub_matches.subcommand().unwrap();
+            match ddb_command {
+                ("tables", sub_matches) => {
+                    let tables_subcommands = sub_matches.subcommand().unwrap();
+                    match tables_subcommands {
+                        ("list", flags) => {
+                            let res = dynamodb::list_tables(shared_config).await;
+                            if flags.get_flag("pretty") {
+                                pretty_print(res.unwrap());
+                            } else if flags.get_flag("csv") {
+                                let _ = write_csv(res.unwrap());
+                            } else {
+                                error!("Unknown input")
+                            }
+                        }
+                        _ => error!("Unknown input")
+                    }
+                }
+                _ => error!("Unknown input"),
+            }
+        }
         _ => error!("Faulty input is provided!"),
     }
 }
