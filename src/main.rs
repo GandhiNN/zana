@@ -1,26 +1,12 @@
-use chrono::Local;
 use directories::BaseDirs;
-use env_logger::Builder;
-use log::LevelFilter;
-use std::io::Write;
+use tracing_subscriber::fmt as TracingSubscriberFmt;
 use zana::aws::config::AWSConfigFile;
 use zana::cli;
 
 #[tokio::main]
 async fn main() {
-    // Setup logger
-    Builder::new()
-        .format(|buf, record| {
-            writeln!(
-                buf,
-                "{} [{}] = {}",
-                Local::now().format("%Y-%m-%dT%H:%M:%S"),
-                record.level(),
-                record.args()
-            )
-        })
-        .filter(None, LevelFilter::Info)
-        .init();
+    // Setup tracing
+    TracingSubscriberFmt::init();
 
     // Load Configuration file
     let base_dirs = BaseDirs::new().unwrap();

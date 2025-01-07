@@ -2,6 +2,7 @@ use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
 use crate::aws::{config, dynamodb, glue, rds, s3};
 use crate::cli;
 use crate::util::{pretty_print, write_csv};
+use tracing::{error, info};
 
 #[allow(dead_code)]
 use clap::{arg, command, value_parser, Command};
@@ -119,7 +120,7 @@ pub async fn run(conf: AWSConfigFile) {
     let timeout: &u64 = matches.get_one::<u64>("timeout").unwrap();
 
     // Load AWS Credentials Configuration
-    log::info!("Using shared config with profile name: {}", profile);
+    info!("Using shared config with profile name: {}", profile);
     let aws_credentials_config = AWSCredentialsConfig::new(conf, profile);
     let shared_config: aws_types::SdkConfig =
         config::set_config(aws_credentials_config, *timeout).await;
@@ -145,10 +146,10 @@ pub async fn run(conf: AWSConfigFile) {
                                     } else if flags.get_flag("csv") {
                                         let _ = write_csv(res.unwrap());
                                     } else {
-                                        log::error!("Unknown input")
+                                        error!("Unknown input")
                                     }
                                 }
-                                _ => log::error!("Unknown input"),
+                                _ => error!("Unknown input"),
                             }
                         }
                         ("list", flags) => {
@@ -158,7 +159,7 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                log::error!("Unknown input")
+                                error!("Unknown input")
                             }
                         }
                         (name, _) => {
@@ -176,10 +177,10 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                log::error!("Unknown input")
+                                error!("Unknown input")
                             }
                         }
-                        _ => log::error!("Unknown input"),
+                        _ => error!("Unknown input"),
                     }
                 }
                 ("table", sub_matches) => {
@@ -193,10 +194,10 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                log::error!("Unknown input")
+                                error!("Unknown input")
                             }
                         }
-                        _ => log::error!("Unknown input"),
+                        _ => error!("Unknown input"),
                     }
                 }
                 _ => unreachable!(),
@@ -212,10 +213,10 @@ pub async fn run(conf: AWSConfigFile) {
                     } else if flags.get_flag("csv") {
                         let _ = write_csv(res.unwrap());
                     } else {
-                        log::error!("Unknown input")
+                        error!("Unknown input")
                     }
                 }
-                _ => log::error!("Unknown input"),
+                _ => error!("Unknown input"),
             }
         }
         Some(("s3", sub_matches)) => {
@@ -231,10 +232,10 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                log::error!("Unknown input")
+                                error!("Unknown input")
                             }
                         }
-                        _ => log::error!("Unknown input"),
+                        _ => error!("Unknown input"),
                     }
                 }
                 ("objects", sub_matches) => {
@@ -248,7 +249,7 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                log::error!("Unknown input")
+                                error!("Unknown input")
                             }
                         }
                         ("versions", flags) => {
@@ -260,19 +261,19 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                log::error!("Unknown input")
+                                error!("Unknown input")
                             }
                         }
-                        _ => log::error!("Unknown input"),
+                        _ => error!("Unknown input"),
                     }
                 }
-                _ => log::error!("Unknown input"),
+                _ => error!("Unknown input"),
             }
         }
         Some(("dynamodb", flags)) => match flags.get_one::<String>("task").unwrap().as_str() {
             "list-tables" => dynamodb::list_tables(shared_config).await,
-            _ => log::error!("No task provided!"),
+            _ => error!("No task provided!"),
         },
-        _ => log::error!("Faulty input is provided!"),
+        _ => error!("Faulty input is provided!"),
     }
 }
