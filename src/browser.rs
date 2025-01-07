@@ -4,6 +4,7 @@ use ini::ini;
 use std::collections::HashMap;
 use std::fs;
 use std::io::prelude::*;
+use tracing::info;
 
 const OSRELEASE: &str = "/proc/sys/kernel/osrelease";
 
@@ -42,7 +43,7 @@ impl RuntimeOS {
             Err(error) => panic!("{}", error),
         };
         if url.as_str().trim_end() == "exit" {
-            println!("Exiting program!");
+            info!("Exiting program!");
             std::process::exit(exitcode::OK)
         }
         let url_to_browse = url_map
@@ -51,7 +52,7 @@ impl RuntimeOS {
             .as_ref()
             .unwrap()
             .as_str();
-        println!("Opening {}", url_to_browse);
+        info!("Opening {}", url_to_browse);
         self.browse(url_to_browse);
     }
 
