@@ -1,97 +1,110 @@
+#![allow(dead_code)]
 use crate::util;
 use ini::ini;
 use std::collections::HashMap;
-
-extern crate std;
+use std::fs;
+use std::io::prelude::*;
 
 const OSRELEASE: &str = "/proc/sys/kernel/osrelease";
 
-fn check_runtime_os() -> &'static str {
-    if is_wsl() {
-        "wsl"
-    } else {
-        std::env::consts::OS
+#[derive(Debug)]
+pub struct RuntimeOS {
+    family: String,
+}
+
+impl RuntimeOS {
+    pub fn get_family(&self) -> Self {
+        if self.is_wsl() {
+            Self {
+                family: String::from("wsl"),
+            }
+        } else {
+            Self {
+                family: String::from(std::env::consts::OS),
+            }
+        }
+    }
+
+    pub fn is_wsl(&self) -> bool {
+        let mut file = fs::File::open(OSRELEASE).expect("File not found");
+        let mut data = String::new();
+        file.read_to_string(&mut data)
+            .expect("Error while reading file");
+        data.to_lowercase().contains("wsl")
+    }
+
+    pub fn url_browser_menu(self, browser: Browser) {
+        let mut url_map = browser.load_url_config();
+        browser.print_url_map(&mut url_map);
+        let opt = util::read_from_stdin();
+        let url = match opt {
+            Ok(buf) => buf,
+            Err(error) => panic!("{}", error),
+        };
+        if url.as_str().trim_end() == "exit" {
+            println!("Exiting program!");
+            std::process::exit(exitcode::OK)
+        }
+        let url_to_browse = url_map
+            .get(url.trim_end())
+            .unwrap()
+            .as_ref()
+            .unwrap()
+            .as_str();
+        println!("Opening {}", url_to_browse);
+        self.browse(url_to_browse);
+    }
+
+    pub fn browse(self, url: &str) {
+        let runtime_os = self.get_family();
+        match runtime_os.family.as_str() {
+            "linux" => std::process::Command::new("xdg-open")
+                .arg(url)
+                .status()
+                .expect("process failed to execute"),
+            "wsl" => std::process::Command::new("wslview")
+                .arg(url)
+                .status()
+                .expect("process failed to execute"),
+            "darwin" => std::process::Command::new("open")
+                .arg(url)
+                .status()
+                .expect("process failed to execute"),
+            _ => std::process::exit(1),
+        };
     }
 }
 
-fn is_wsl() -> bool {
-    use std::io::prelude::*;
-    let mut file = std::fs::File::open(OSRELEASE).expect("File not found");
-    let mut data = String::new();
-    file.read_to_string(&mut data)
-        .expect("Error while reading file");
-    if data.to_lowercase().contains("wsl") {
-        return true;
+#[derive(Debug, Copy, Clone)]
+pub struct Browser {}
+
+impl Browser {
+    pub fn load_url_config(self) -> HashMap<String, Option<String>> {
+        let current_path = std::env::current_dir()
+            .unwrap()
+            .into_os_string()
+            .into_string()
+            .unwrap();
+        let url_config_path = format!("{}/url.ini", current_path);
+        let ini = ini!(url_config_path.as_str());
+        ini["url"].clone()
     }
-    false
-}
 
-fn load_url_config() -> HashMap<String, Option<String>> {
-    let current_path = std::env::current_dir()
-        .unwrap()
-        .into_os_string()
-        .into_string()
-        .unwrap();
-    let url_config_path = format!("{}/url.ini", current_path);
-    let ini = ini!(url_config_path.as_str());
-    ini["url"].clone()
-}
-
-fn print_url_map(url_map: &mut HashMap<String, Option<String>>) {
-    println!("####################");
-    println!("## Available URLs ##");
-    println!("####################");
-    for (key, value) in url_map {
-        let base_indent_level = 20;
-        let key_length = key.len();
-        println!(
-            "{}{:indent$}=\t{}",
-            key,
-            "",
-            value.clone().unwrap(),
-            indent = base_indent_level - key_length
-        );
+    pub fn print_url_map(self, url_map: &mut HashMap<String, Option<String>>) {
+        println!("####################");
+        println!("## Available URLs ##");
+        println!("####################");
+        for (key, value) in url_map {
+            let base_indent_level = 20;
+            let key_length = key.len();
+            println!(
+                "{}{:indent$}=\t{}",
+                key,
+                "",
+                value.clone().unwrap(),
+                indent = base_indent_level - key_length
+            );
+        }
+        println!();
     }
-    println!();
-}
-
-fn open_url_in_browser(url: &str) {
-    let runtime_os = check_runtime_os();
-    match runtime_os {
-        "linux" => std::process::Command::new("xdg-open")
-            .arg(url)
-            .status()
-            .expect("process failed to execute"),
-        "wsl" => std::process::Command::new("wslview")
-            .arg(url)
-            .status()
-            .expect("process failed to execute"),
-        "darwin" => std::process::Command::new("open")
-            .arg(url)
-            .status()
-            .expect("process failed to execute"),
-        _ => std::process::exit(1),
-    };
-}
-
-pub fn url_browser_menu() {
-    let mut url_map = load_url_config();
-    print_url_map(&mut url_map);
-    let opt = util::read_from_stdin();
-    let url = match opt {
-        Ok(buf) => buf,
-        Err(error) => panic!("{}", error),
-    };
-    if url.as_str().trim_end() == "exit" {
-        println!("Exiting program!");
-        std::process::exit(exitcode::OK)
-    }
-    let url_to_browse = url_map
-        .get(url.trim_end())
-        .unwrap()
-        .as_ref()
-        .unwrap()
-        .as_str();
-    println!("Opening {}", url_to_browse);
-    open_url_in_browser(url_to_browse);
 }
