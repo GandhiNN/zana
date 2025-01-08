@@ -104,16 +104,27 @@ pub fn cmd() -> Command {
             ),
         )
         .subcommand(
-            Command::new("dynamodb").about("DynamoDB API").subcommand(
-                Command::new("tables")
-                    .about("DynamoDB Tables API")
-                    .subcommand(
-                        Command::new("list")
-                            .arg(arg!(-p --pretty "Pretty print output"))
-                            .arg(arg!(-c --csv "Print output as CSV"))
-                            .arg_required_else_help(true),
-                    ),
-            ),
+            Command::new("dynamodb")
+                .about("DynamoDB API")
+                .subcommand(
+                    Command::new("tables")
+                        .about("DynamoDB Tables API")
+                        .subcommand(
+                            Command::new("list")
+                                .arg(arg!(-p --pretty "Pretty print output"))
+                                .arg(arg!(-c --csv "Print output as CSV"))
+                                .arg_required_else_help(true),
+                        ),
+                )
+                .subcommand(
+                    Command::new("table")
+                        .about("DynamoDB Table API")
+                        .subcommand(
+                            Command::new("describe")
+                                .arg(arg!(--table_name <VALUE> "DynamoDB table name"))
+                                .arg_required_else_help(true),
+                        ),
+                ),
         )
 }
 
@@ -292,6 +303,17 @@ pub async fn run(conf: AWSConfigFile) {
                             } else {
                                 error!("Unknown input")
                             }
+                        }
+                        _ => error!("Unknown input"),
+                    }
+                }
+                ("table", sub_matches) => {
+                    let table_subcommands = sub_matches.subcommand().unwrap();
+                    match table_subcommands {
+                        ("describe", flags) => {
+                            let table_name = flags.get_one::<String>("table_name").unwrap();
+                            let res = ddb.describe_table(String::from(table_name)).await;
+                            println!("{}", res.unwrap());
                         }
                         _ => error!("Unknown input"),
                     }
