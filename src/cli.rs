@@ -1,5 +1,6 @@
 use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
-use crate::aws::{config, dynamodb, glue, rds, s3};
+use crate::aws::dynamodb::DynamoDB;
+use crate::aws::{config, glue, rds, s3};
 use crate::cli;
 use crate::util::{pretty_print, write_csv};
 use tracing::{error, info};
@@ -276,13 +277,14 @@ pub async fn run(conf: AWSConfigFile) {
             }
         }
         Some(("dynamodb", sub_matches)) => {
+            let ddb: DynamoDB = DynamoDB::new(shared_config); // Initialize DynamoDB client object
             let ddb_command = sub_matches.subcommand().unwrap();
             match ddb_command {
                 ("tables", sub_matches) => {
                     let tables_subcommands = sub_matches.subcommand().unwrap();
                     match tables_subcommands {
                         ("list", flags) => {
-                            let res = dynamodb::list_tables(shared_config).await;
+                            let res = ddb.list_tables().await;
                             if flags.get_flag("pretty") {
                                 pretty_print(res.unwrap());
                             } else if flags.get_flag("csv") {
@@ -291,7 +293,7 @@ pub async fn run(conf: AWSConfigFile) {
                                 error!("Unknown input")
                             }
                         }
-                        _ => error!("Unknown input")
+                        _ => error!("Unknown input"),
                     }
                 }
                 _ => error!("Unknown input"),
