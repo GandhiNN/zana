@@ -23,7 +23,7 @@ async fn get_instances(client: &Client) -> Result<DescribeDbInstancesOutput, Err
 }
 
 pub async fn list_instances(config: SdkConfig) -> Result<Vec<DBInstance>, Error> {
-    let client = set_client(config).await.unwrap();
+    let client = set_client(config).await?;
     let instances_list = get_instances(&client).await;
     let mut db_instances: Vec<DBInstance> = Vec::new();
     match instances_list {

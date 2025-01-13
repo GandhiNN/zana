@@ -35,7 +35,7 @@ async fn set_client(config: SdkConfig) -> Result<Client, Error> {
 }
 
 pub async fn list_buckets(config: SdkConfig) -> Result<Vec<S3Bucket>, Error> {
-    let client = set_client(config).await.unwrap();
+    let client = set_client(config).await?;
     let mut list_buckets = client.list_buckets().into_paginator().send();
     let mut s3_bucket: Vec<S3Bucket> = Vec::new();
     while let Some(list_buckets_output) = list_buckets.next().await {
@@ -57,7 +57,7 @@ pub async fn list_buckets(config: SdkConfig) -> Result<Vec<S3Bucket>, Error> {
 }
 
 pub async fn list_objects(config: SdkConfig, bucket: String) -> Result<Vec<S3Object>, Error> {
-    let client = set_client(config).await.unwrap();
+    let client = set_client(config).await?;
     let mut list_objects = client
         .list_objects_v2()
         .bucket(bucket)
@@ -88,7 +88,7 @@ pub async fn list_objects_versions(
     config: SdkConfig,
     bucket: String,
 ) -> Result<Vec<S3ObjectVersion>, Error> {
-    let client = set_client(config).await.unwrap();
+    let client = set_client(config).await?;
     let list_objects_versions = client.list_object_versions().bucket(bucket).send().await?;
     let mut s3_object_version: Vec<S3ObjectVersion> = Vec::new();
     for version in list_objects_versions.versions() {

@@ -43,7 +43,7 @@ async fn set_client(config: SdkConfig) -> Result<Client, Error> {
 }
 
 pub async fn list_tables(config: SdkConfig, database: String) -> Result<Vec<GlueTable>, Error> {
-    let client = set_client(config).await.unwrap();
+    let client = set_client(config).await?;
     let mut list_tables = client
         .get_tables()
         .database_name(database)
@@ -80,7 +80,7 @@ pub async fn list_tables(config: SdkConfig, database: String) -> Result<Vec<Glue
 }
 
 pub async fn list_jobs(config: SdkConfig) -> Result<Vec<GlueJobNames>, Error> {
-    let client = set_client(config).await.unwrap();
+    let client = set_client(config).await?;
     let mut list_jobs = client.list_jobs().into_paginator().send();
     let mut glue_job_names: Vec<GlueJobNames> = Vec::new();
     while let Some(list_jobs_output) = list_jobs.next().await {
@@ -101,7 +101,7 @@ pub async fn list_jobs(config: SdkConfig) -> Result<Vec<GlueJobNames>, Error> {
 }
 
 pub async fn get_job_runs(config: SdkConfig, job_name: String) -> Result<Vec<GlueJobRun>, Error> {
-    let client = set_client(config).await.unwrap();
+    let client = set_client(config).await?;
     let mut job_runs = client
         .get_job_runs()
         .job_name(job_name)
@@ -127,7 +127,7 @@ pub async fn get_job_runs(config: SdkConfig, job_name: String) -> Result<Vec<Glu
 }
 
 pub async fn list_databases(config: SdkConfig) -> Result<Vec<GlueDatabase>, Error> {
-    let client = set_client(config).await.unwrap();
+    let client = set_client(config).await?;
     let mut list_databases = client.get_databases().into_paginator().send();
     let mut glue_databases: Vec<GlueDatabase> = Vec::new();
     while let Some(list_databases_output) = list_databases.next().await {
