@@ -9,28 +9,30 @@ pub fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
 }
 
-pub fn pause() {
+pub fn pause() -> Result<(), std::io::Error> {
     use std::io::prelude::*;
     let mut stdin = io::stdin();
     let mut stdout = io::stdout();
 
     // We want the cursor to stay at the end of the line
     // so we print without a newline
-    write!(stdout, "Press any key to continue...").unwrap();
-    stdout.flush().unwrap();
+    write!(stdout, "Press any key to continue...")?;
+    stdout.flush()?;
 
     // Read a single byte and discard
-    let _ = stdin.read(&mut [0u8]).unwrap();
+    let _ = stdin.read(&mut [0u8])?;
+
+    Ok(())
 }
 
-pub fn read_from_stdin() -> io::Result<String> {
+pub fn read_from_stdin() -> Result<String, std::io::Error> {
     use std::io::prelude::*;
 
     let mut buffer = String::new();
     let mut stdout = io::stdout();
 
-    write!(stdout, "Select URL key or type exit to quit program : ").unwrap();
-    stdout.flush().unwrap();
+    write!(stdout, "Select URL key or type exit to quit program : ")?;
+    stdout.flush()?;
 
     io::stdin().read_line(&mut buffer)?; // includes '\n'
     Ok(buffer)
