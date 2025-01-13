@@ -5,10 +5,6 @@ use serde::Serialize;
 use std::fmt;
 use tabled::Tabled;
 
-pub struct DynamoDB {
-    pub client: Client,
-}
-
 #[derive(Debug)]
 pub struct TableDescription {
     name: String,
@@ -41,6 +37,10 @@ impl fmt::Display for TableDescription {
             self.item_count
         )
     }
+}
+
+pub struct DynamoDB {
+    pub client: Client,
 }
 
 impl DynamoDB {

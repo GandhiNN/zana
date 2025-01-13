@@ -1,6 +1,7 @@
 use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
 use crate::aws::dynamodb::DynamoDB;
-use crate::aws::{config, glue, rds, s3};
+use crate::aws::rds::RDS;
+use crate::aws::{config, glue, s3};
 use crate::cli;
 use crate::util::{pretty_print, write_csv};
 use tracing::{error, info};
@@ -221,10 +222,11 @@ pub async fn run(conf: AWSConfigFile) {
             }
         }
         Some(("rds", sub_matches)) => {
+            let rds: RDS = RDS::new(shared_config); // Initialize DynamoDB client object
             let rds_command = sub_matches.subcommand().unwrap();
             match rds_command {
                 ("instances", flags) => {
-                    let res = rds::list_instances(shared_config).await;
+                    let res = rds.list_instances().await;
                     if flags.get_flag("pretty") {
                         pretty_print(res.unwrap());
                     } else if flags.get_flag("csv") {
