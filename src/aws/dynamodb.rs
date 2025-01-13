@@ -26,8 +26,19 @@ impl fmt::Display for TableDescription {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "-------------------\nTable Description\n-------------------\n Table Name: {}\nHash Key: {}\nRange Key: {}\nStatus: {}\nCreation Date: {}\nRead Capacity: {}\nWrite Capacity: {}\nSize: {}\nItem Count: {}",
-            self.name, self.hash_key, self.range_key, self.status, self.creation_date, self.read_capacity, self.write_capacity, self.size, self.item_count
+            "-------------------\nTable Description\n-------------------\n 
+            Table Name: {}\nHash Key: {}\nRange Key: {}\nStatus: 
+            {}\nCreation Date: {}\nRead Capacity: {}\nWrite Capacity: 
+            {}\nSize: {}\nItem Count: {}",
+            self.name,
+            self.hash_key,
+            self.range_key,
+            self.status,
+            self.creation_date,
+            self.read_capacity,
+            self.write_capacity,
+            self.size,
+            self.item_count
         )
     }
 }
