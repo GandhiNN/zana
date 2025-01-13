@@ -134,8 +134,11 @@ pub async fn run(conf: AWSConfigFile) {
     let matches = cli::cmd().get_matches();
 
     // Parse global arguments to propagate to subcommands
-    let profile = matches.get_one::<String>("profile").unwrap();
-    let timeout: &u64 = matches.get_one::<u64>("timeout").unwrap();
+    let default_profile = "default".to_owned();
+    let profile = matches
+        .get_one::<String>("profile")
+        .unwrap_or(&default_profile);
+    let timeout: &u64 = matches.get_one::<u64>("timeout").unwrap_or(&(5000_u64));
 
     // Load AWS Credentials Configuration
     info!("Using shared config with profile name: {}", profile);
@@ -222,7 +225,7 @@ pub async fn run(conf: AWSConfigFile) {
             }
         }
         Some(("rds", sub_matches)) => {
-            let rds: RDS = RDS::new(shared_config); // Initialize RDS client object
+            let rds: RDS = RDS::new(shared_config); // Initialize DynamoDB client object
             let rds_command = sub_matches.subcommand().unwrap();
             match rds_command {
                 ("instances", flags) => {
