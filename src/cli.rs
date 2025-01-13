@@ -222,7 +222,7 @@ pub async fn run(conf: AWSConfigFile) {
             }
         }
         Some(("rds", sub_matches)) => {
-            let rds: RDS = RDS::new(shared_config); // Initialize DynamoDB client object
+            let rds: RDS = RDS::new(shared_config); // Initialize RDS client object
             let rds_command = sub_matches.subcommand().unwrap();
             match rds_command {
                 ("instances", flags) => {
