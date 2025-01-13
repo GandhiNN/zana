@@ -18,7 +18,7 @@ pub fn cmd() -> Command {
         .arg(
             arg!(--profile <VALUE> "AWS profile name to use")
                 .value_parser(value_parser!(String))
-                .default_value("dev")
+                .default_value("default")
                 .global(true),
         )
         .arg(
