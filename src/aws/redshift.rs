@@ -98,4 +98,18 @@ impl Redshift {
         }
         Ok(cluster_desc)
     }
+
+    pub async fn describe_events(&self) -> Result<(), Error> {
+        let mut resp = self.client.describe_events().into_paginator().send();
+        while let Some(page) = resp.next().await {
+            match page {
+                Ok(res) => {
+                    println!("{:#?}", res.events)
+                }
+                Err(e) => println!("{:#?}", e),
+            }
+        }
+        println!("{:#?}", resp);
+        Ok(())
+    }
 }

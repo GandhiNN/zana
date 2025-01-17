@@ -129,15 +129,22 @@ pub fn cmd() -> Command {
                 ),
         )
         .subcommand(
-            Command::new("redshift").about("Redshift API").subcommand(
-                Command::new("cluster")
-                    .about("Redshift cluster API")
-                    .subcommand(
-                        Command::new("describe")
-                            .arg(arg!(--cluster_id <VALUE> "Redshift Cluster ID"))
-                            .arg_required_else_help(true),
-                    ),
-            ),
+            Command::new("redshift")
+                .about("Redshift API")
+                .subcommand(
+                    Command::new("cluster")
+                        .about("Redshift cluster API")
+                        .subcommand(
+                            Command::new("describe")
+                                .arg(arg!(--cluster_id <VALUE> "Redshift Cluster ID"))
+                                .arg_required_else_help(true),
+                        ),
+                )
+                .subcommand(
+                    Command::new("events")
+                        .about("Redshift events API")
+                        .subcommand(Command::new("describe")),
+                ),
         )
 }
 
@@ -349,6 +356,15 @@ pub async fn run(conf: AWSConfigFile) {
                             let cluster_id = flags.get_one::<String>("cluster_id").unwrap();
                             let res = redshift.describe_cluster(String::from(cluster_id)).await;
                             println!("{}", res.unwrap());
+                        }
+                        _ => error!("Unknown input"),
+                    }
+                }
+                ("events", sub_matches) => {
+                    let subcommands = sub_matches.subcommand().unwrap();
+                    match subcommands {
+                        ("describe", _) => {
+                            let _res = redshift.describe_events().await;
                         }
                         _ => error!("Unknown input"),
                     }
