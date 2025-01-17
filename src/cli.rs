@@ -347,7 +347,7 @@ pub async fn run(conf: AWSConfigFile) {
                     match subcommands {
                         ("describe", flags) => {
                             let cluster_id = flags.get_one::<String>("cluster_id").unwrap();
-                            let res = redshift.describe_clusters(String::from(cluster_id)).await;
+                            let res = redshift.describe_cluster(String::from(cluster_id)).await;
                             println!("{}", res.unwrap());
                         }
                         _ => error!("Unknown input"),
