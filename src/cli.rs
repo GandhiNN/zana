@@ -1,6 +1,7 @@
 use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
 use crate::aws::dynamodb::DynamoDB;
 use crate::aws::rds::RDS;
+use crate::aws::redshift::Redshift;
 use crate::aws::{config, glue, s3};
 use crate::cli;
 use crate::util::{pretty_print, write_csv};
@@ -126,6 +127,17 @@ pub fn cmd() -> Command {
                                 .arg_required_else_help(true),
                         ),
                 ),
+        )
+        .subcommand(
+            Command::new("redshift").about("Redshift API").subcommand(
+                Command::new("cluster")
+                    .about("Redshift cluster API")
+                    .subcommand(
+                        Command::new("describe")
+                            .arg(arg!(--cluster_id <VALUE> "Redshift Cluster ID"))
+                            .arg_required_else_help(true),
+                    ),
+            ),
         )
 }
 
@@ -319,6 +331,23 @@ pub async fn run(conf: AWSConfigFile) {
                             let table_name = flags.get_one::<String>("table_name").unwrap();
                             let res = ddb.describe_table(String::from(table_name)).await;
                             println!("{}", res.unwrap());
+                        }
+                        _ => error!("Unknown input"),
+                    }
+                }
+                _ => error!("Unknown input"),
+            }
+        }
+        Some(("redshift", sub_matches)) => {
+            let redshift = Redshift::new(shared_config); // Initialize DynamoDB client object
+            let command = sub_matches.subcommand().unwrap();
+            match command {
+                ("cluster", sub_matches) => {
+                    let subcommands = sub_matches.subcommand().unwrap();
+                    match subcommands {
+                        ("describe", flags) => {
+                            let cluster_id = flags.get_one::<String>("cluster_id").unwrap();
+                            let _res = redshift.describe_clusters(String::from(cluster_id)).await;
                         }
                         _ => error!("Unknown input"),
                     }
