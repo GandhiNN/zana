@@ -231,6 +231,18 @@ pub async fn run(conf: AWSConfigFile) {
                 _ => error!("Unknown input"),
             }
         }
+        Some(("resource-explorer", sub_matches)) => {
+            let command = sub_matches.subcommand().unwrap();
+            match command {
+                ("search", sub_matches) => {
+                    let query_string = sub_matches.get_one::<String>("query").unwrap();
+                    let _ = crate::aws::resource_explorer::ResourceExplorer::new(shared_config)
+                        .search(query_string.to_string())
+                        .await;
+                }
+                _ => error!("Unknown input"),
+            }
+        }
         _ => error!("Faulty input is provided!"),
     }
 }

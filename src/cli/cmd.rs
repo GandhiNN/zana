@@ -136,4 +136,14 @@ pub fn cmd() -> Command {
                         .subcommand(Command::new("describe")),
                 ),
         )
+        .subcommand(
+            Command::new("resource-explorer")
+                .about("Resource Explorer API")
+                .subcommand(
+                    Command::new("search")
+                        .about("Search resources")
+                        .arg(arg!(--query <VALUE> "Query string").required(true))
+                        .arg_required_else_help(true),
+                ),
+        )
 }
