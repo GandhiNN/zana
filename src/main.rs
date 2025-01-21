@@ -16,5 +16,5 @@ async fn main() {
     let aws_config_file = AWSConfigFile::new(config_path);
 
     // Handle CLI arguments
-    cli::run(aws_config_file).await;
+    cli::runner::run(aws_config_file).await;
 }
