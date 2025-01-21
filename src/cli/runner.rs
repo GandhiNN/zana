@@ -2,6 +2,7 @@ use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
 use crate::aws::dynamodb::DynamoDB;
 use crate::aws::rds::RDS;
 use crate::aws::redshift::Redshift;
+use crate::aws::resource_explorer::ResourceExplorer;
 use crate::aws::{config, glue, s3};
 use crate::cli::cmd;
 use crate::util::{pretty_print, write_csv};
@@ -234,11 +235,18 @@ pub async fn run(conf: AWSConfigFile) {
         Some(("resource-explorer", sub_matches)) => {
             let command = sub_matches.subcommand().unwrap();
             match command {
-                ("search", sub_matches) => {
-                    let query_string = sub_matches.get_one::<String>("query").unwrap();
-                    let _ = crate::aws::resource_explorer::ResourceExplorer::new(shared_config)
+                ("search", flags) => {
+                    let query_string = flags.get_one::<String>("query").unwrap();
+                    let res = ResourceExplorer::new(shared_config)
                         .search(query_string.to_string())
                         .await;
+                    if flags.get_flag("pretty") {
+                        pretty_print(res.unwrap());
+                    } else if flags.get_flag("csv") {
+                        let _ = write_csv(res.unwrap());
+                    } else {
+                        error!("Unknown input")
+                    }
                 }
                 _ => error!("Unknown input"),
             }

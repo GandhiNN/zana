@@ -143,6 +143,8 @@ pub fn cmd() -> Command {
                     Command::new("search")
                         .about("Search resources")
                         .arg(arg!(--query <VALUE> "Query string").required(true))
+                        .arg(arg!(-p --pretty "Pretty print output"))
+                        .arg(arg!(-c --csv "Print output as CSV"))
                         .arg_required_else_help(true),
                 ),
         )
