@@ -154,16 +154,16 @@ pub fn cmd() -> Command {
                 .subcommand(
                     Command::new("get-cost-and-usage")
                         .about("Get cost and usage")
-                        .arg(arg!(--start <VALUE> "Start date").required(true))
-                        .arg(arg!(--end <VALUE> "End date").required(true))
+                        .arg(arg!(--start <VALUE> "Start date. Format: YYYY-MM-DD").required(true))
+                        .arg(arg!(--end <VALUE> "End date. Format: YYYY-MM-DD").required(true))
                         .arg(arg!(--granularity <VALUE> "Report Granularity. Possible values are:\n[daily, hourly, monthly]").required(true))
                         .arg(
                             arg!(--metrics <VALUE> "Cost Metrics. Possible values are:\n[AmortizedCost, BlendedCost, NetAmortizedCost, NetUnblendedCost, NormalizedUsageAmount, UnblendedCost, UsageQuantity]")
                                 .required(true)
                                 .value_delimiter(','), // accept multiple values e.g. "value1,value2"
                         )
-                        .arg(arg!(--group_type <VALUE> "Group by type").required(true))
-                        .arg(arg!(--group_key <VALUE> "Group by key").required(true))
+                        .arg(arg!(--group_type <VALUE> "Group by type. Possible values are:\n[dimension, tag, costcategory]").required(true))
+                        .arg(arg!(--group_key <VALUE> "Group by key. Possible values are:\n[az, instance_type, legal, entity_name, invoicing_entity, linked_account, operation, platform, purchase_type, service, tenancy, record_type, usage_type]").required(true))
                         .arg_required_else_help(true),
                 ),
         )

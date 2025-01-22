@@ -53,7 +53,7 @@ impl CostExplorer {
             "tag" => GroupDefinition::builder()
                 .set_key(Some(String::from(group_by_key)))
                 .set_type(Some(GroupDefinitionType::Tag)),
-            "cost category" => GroupDefinition::builder()
+            "costcategory" => GroupDefinition::builder()
                 .set_key(Some(String::from(group_by_key)))
                 .set_type(Some(GroupDefinitionType::CostCategory)),
             _ => GroupDefinition::builder(), // Default value
