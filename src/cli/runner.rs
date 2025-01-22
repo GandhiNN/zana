@@ -260,7 +260,7 @@ pub async fn run(conf: AWSConfigFile) {
                     let end = flags.get_one::<String>("end").unwrap();
                     let granularity = flags.get_one::<String>("granularity").unwrap();
                     let metrics = flags
-                        .get_many::<String>("metrics")
+                        .get_many::<String>("cost_agg_metrics")
                         .unwrap()
                         .map(|x| x.to_string())
                         .collect(); // Collect values as vector of owned strings
