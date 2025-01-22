@@ -28,6 +28,7 @@ tracing-subscriber = "0.3.19"
 tracing = "0.1.41"
 aws-sdk-redshift = "1.59.0"
 aws-sdk-resourceexplorer2 = "1.57.0"
+aws-sdk-costexplorer = "1.61.0"
 
 [profile.release]
 strip = true        # Strip symbols from binary*
