@@ -160,7 +160,7 @@ pub fn cmd() -> Command {
                         .arg(
                             arg!(--metrics <VALUE> "Metrics")
                                 .required(true)
-                                .value_delimiter(','),
+                                .value_delimiter(','), // accept multiple values e.g. "value1,value2"
                         )
                         .arg(arg!(--gtype <VALUE> "Group by type").required(true))
                         .arg(arg!(--gkey <VALUE> "Group by key").required(true))
