@@ -1,3 +1,8 @@
+/*
+Reference for Group By Metrics:
+https://docs.rs/aws-sdk-costexplorer/latest/aws_sdk_costexplorer/operation/get_cost_and_usage/builders/struct.GetCostAndUsageFluentBuilder.html#method.group_by
+*/
+
 use aws_sdk_costexplorer::types::{
     DateInterval, Granularity, GroupDefinition, GroupDefinitionType,
 };

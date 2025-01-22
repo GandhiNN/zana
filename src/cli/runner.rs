@@ -1,4 +1,5 @@
 use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
+use crate::aws::cost_explorer::CostExplorer;
 use crate::aws::dynamodb::DynamoDB;
 use crate::aws::rds::RDS;
 use crate::aws::redshift::Redshift;
@@ -247,6 +248,34 @@ pub async fn run(conf: AWSConfigFile) {
                     } else {
                         error!("Unknown input")
                     }
+                }
+                _ => error!("Unknown input"),
+            }
+        }
+        Some(("cost-explorer", sub_matches)) => {
+            let command = sub_matches.subcommand().unwrap();
+            match command {
+                ("get-cost-and-usage", flags) => {
+                    let start = flags.get_one::<String>("start").unwrap();
+                    let end = flags.get_one::<String>("end").unwrap();
+                    let granularity = flags.get_one::<String>("granularity").unwrap();
+                    let metrics = flags
+                        .get_many::<String>("metrics")
+                        .unwrap()
+                        .map(|x| x.to_string())
+                        .collect();
+                    let group_by_type = flags.get_one::<String>("gtype").unwrap();
+                    let group_by_key = flags.get_one::<String>("gkey").unwrap();
+                    let _res = CostExplorer::new(shared_config)
+                        .get_cost_and_usage(
+                            start.to_string(),
+                            end.to_string(),
+                            granularity,
+                            metrics,
+                            group_by_type.to_string(),
+                            group_by_key.to_string(),
+                        )
+                        .await;
                 }
                 _ => error!("Unknown input"),
             }

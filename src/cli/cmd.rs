@@ -148,4 +148,23 @@ pub fn cmd() -> Command {
                         .arg_required_else_help(true),
                 ),
         )
+        .subcommand(
+            Command::new("cost-explorer")
+                .about("Cost Explorer API")
+                .subcommand(
+                    Command::new("get-cost-and-usage")
+                        .about("Get cost and usage")
+                        .arg(arg!(--start <VALUE> "Start date").required(true))
+                        .arg(arg!(--end <VALUE> "End date").required(true))
+                        .arg(arg!(--granularity <VALUE> "Granularity").required(true))
+                        .arg(
+                            arg!(--metrics <VALUE> "Metrics")
+                                .required(true)
+                                .value_delimiter(','),
+                        )
+                        .arg(arg!(--gtype <VALUE> "Group by type").required(true))
+                        .arg(arg!(--gkey <VALUE> "Group by key").required(true))
+                        .arg_required_else_help(true),
+                ),
+        )
 }
