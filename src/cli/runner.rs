@@ -264,16 +264,16 @@ pub async fn run(conf: AWSConfigFile) {
                         .unwrap()
                         .map(|x| x.to_string())
                         .collect(); // Collect values as vector of owned strings
-                    let group_by_type = flags.get_one::<String>("gtype").unwrap();
-                    let group_by_key = flags.get_one::<String>("gkey").unwrap();
+                    let group_by_type = flags.get_one::<String>("group_type").unwrap();
+                    let group_by_key = flags.get_one::<String>("group_key").unwrap();
                     let _res = CostExplorer::new(shared_config)
                         .get_cost_and_usage(
-                            start.to_string(),
-                            end.to_string(),
+                            start,
+                            end,
                             granularity,
                             metrics,
-                            group_by_type.to_string(),
-                            group_by_key.to_string(),
+                            group_by_type,
+                            group_by_key,
                         )
                         .await;
                 }

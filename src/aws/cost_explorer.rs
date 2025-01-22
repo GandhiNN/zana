@@ -21,12 +21,12 @@ impl CostExplorer {
 
     pub async fn get_cost_and_usage(
         &self,
-        start: String,
-        end: String,
+        start: &str,
+        end: &str,
         granularity: &str,
         metrics: Vec<String>,
-        group_by_type: String,
-        group_by_key: String,
+        group_by_type: &str,
+        group_by_key: &str,
     ) -> Result<(), Error> {
         // DateInterval is a non-exhaustive struct, we have to use the builder to create it
         let date_interval = DateInterval::builder()
@@ -35,25 +35,26 @@ impl CostExplorer {
             .build()
             .unwrap();
         // Granularity is a non-exhaustive enum, we have to use the builder to create it
-        let granularity_input = match granularity {
-            "DAILY" => Granularity::Daily,
-            "HOURLY" => Granularity::Hourly,
-            "MONTHLY" => Granularity::Monthly,
+        let granularity_input = match granularity.to_ascii_lowercase().as_str() {
+            // convert to lowercase to match the enum variants
+            "daily" => Granularity::Daily,
+            "hourly" => Granularity::Hourly,
+            "monthly" => Granularity::Monthly,
             _ => Granularity::try_parse("NewFeature").unwrap(),
         };
         // metrics is an Option<Vec<String>>, we have to use Some() to wrap it
         let metrics_input = Some(metrics);
         // Create a group_by criteria using the type and key
         // GroupDefinition is a non-exhaustive enum, we have to use matching
-        let group_def = match group_by_type.as_str() {
-            "DIMENSION" => GroupDefinition::builder()
-                .set_key(Some(group_by_key))
+        let group_def = match group_by_type.to_ascii_lowercase().as_str() {
+            "dimension" => GroupDefinition::builder()
+                .set_key(Some(String::from(group_by_key)))
                 .set_type(Some(GroupDefinitionType::Dimension)),
-            "TAG" => GroupDefinition::builder()
-                .set_key(Some(group_by_key))
+            "tag" => GroupDefinition::builder()
+                .set_key(Some(String::from(group_by_key)))
                 .set_type(Some(GroupDefinitionType::Tag)),
-            "COST CATEGORY" => GroupDefinition::builder()
-                .set_key(Some(group_by_key))
+            "cost category" => GroupDefinition::builder()
+                .set_key(Some(String::from(group_by_key)))
                 .set_type(Some(GroupDefinitionType::CostCategory)),
             _ => GroupDefinition::builder(), // Default value
         };

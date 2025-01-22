@@ -156,14 +156,14 @@ pub fn cmd() -> Command {
                         .about("Get cost and usage")
                         .arg(arg!(--start <VALUE> "Start date").required(true))
                         .arg(arg!(--end <VALUE> "End date").required(true))
-                        .arg(arg!(--granularity <VALUE> "Granularity").required(true))
+                        .arg(arg!(--granularity <VALUE> "Report Granularity. Possible values are:\n[daily, hourly, monthly]").required(true))
                         .arg(
-                            arg!(--metrics <VALUE> "Metrics")
+                            arg!(--metrics <VALUE> "Cost Metrics. Possible values are:\n[AmortizedCost, BlendedCost, NetAmortizedCost, NetUnblendedCost, NormalizedUsageAmount, UnblendedCost, UsageQuantity]")
                                 .required(true)
                                 .value_delimiter(','), // accept multiple values e.g. "value1,value2"
                         )
-                        .arg(arg!(--gtype <VALUE> "Group by type").required(true))
-                        .arg(arg!(--gkey <VALUE> "Group by key").required(true))
+                        .arg(arg!(--group_type <VALUE> "Group by type").required(true))
+                        .arg(arg!(--group_key <VALUE> "Group by key").required(true))
                         .arg_required_else_help(true),
                 ),
         )
