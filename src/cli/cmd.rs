@@ -160,7 +160,7 @@ pub fn cmd() -> Command {
                         .arg(
                             arg!(--metrics <VALUE> "Cost Metrics. Possible values are:\n[AmortizedCost, BlendedCost, NetAmortizedCost, NetUnblendedCost, NormalizedUsageAmount, UnblendedCost, UsageQuantity]")
                                 .required(true)
-                                .value_delimiter(','), // accept multiple values e.g. "value1,value2"
+                                .value_delimiter(',').default_value("UnblendedCost") // accept multiple values e.g. "value1,value2"
                         )
                         .arg(arg!(--group_type <VALUE> "Group by type. Possible values are:\n[dimension, tag, costcategory]").required(true))
                         .arg(arg!(--group_key <VALUE> "Group by key. Possible values are:\n[az, instance_type, legal, entity_name, invoicing_entity, linked_account, operation, platform, purchase_type, service, tenancy, record_type, usage_type]").required(true))

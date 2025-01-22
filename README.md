@@ -1,2 +1,16 @@
 # Zana
 CLI wrapper for AWS SDK
+
+## Cost-Explorer API
+The following description explains cost types that we can use as input for the `cost-explorer` API:  
+
+1. UnblendedCost  
+This is the cost dataset presented to you on the Bills page. It's the default option for analyzing cost in AWS Cost Explorer. Unblended costs represent our usage costs on the day they are charged to you. In finance terms, they represent your costs on a cash basis of accounting.  
+  
+2. AmortizedCost  
+It is used to view costs on an accrual basis rather than a cash basis. It is useful if you have purchased AWS Reservations e.g. EC2 Reserved Instances.  
+
+3. BlendedCost  
+It is calculated by multiplying each account's service usage agains something called a blended rate. A blended rate is the average rate of on-demand usage, as well as Savings Plans and reservation-related usage, that is consumed by member accounts in an organization for a particular service.
+
+4. <TBC>
