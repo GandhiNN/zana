@@ -22,7 +22,7 @@ impl ResourceExplorer {
         Self { client }
     }
 
-    pub async fn search(&self, query_string: String) -> Result<Vec<ResourceDescription>, Error> {
+    pub async fn search(&self, query_string: &str) -> Result<Vec<ResourceDescription>, Error> {
         let mut resp = self
             .client
             .search()

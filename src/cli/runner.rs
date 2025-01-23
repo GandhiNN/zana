@@ -42,7 +42,7 @@ pub async fn run(conf: AWSConfigFile) {
                                     let glue_job_name =
                                         flags.get_one::<String>("jobname").unwrap().to_string();
                                     let res =
-                                        glue::get_job_runs(shared_config, glue_job_name).await;
+                                        glue::get_job_runs(shared_config, &glue_job_name).await;
                                     if flags.get_flag("pretty") {
                                         pretty_print(res.unwrap());
                                     } else if flags.get_flag("csv") {
@@ -90,7 +90,7 @@ pub async fn run(conf: AWSConfigFile) {
                     match table_subcommands {
                         ("list", flags) => {
                             let db = flags.get_one::<String>("database").unwrap();
-                            let res = glue::list_tables(shared_config, db.to_string()).await;
+                            let res = glue::list_tables(shared_config, db).await;
                             if flags.get_flag("pretty") {
                                 pretty_print(res.unwrap());
                             } else if flags.get_flag("csv") {
@@ -146,7 +146,7 @@ pub async fn run(conf: AWSConfigFile) {
                     match objects_subcommands {
                         ("list", flags) => {
                             let bucket = flags.get_one::<String>("bucket").unwrap();
-                            let res = s3::list_objects(shared_config, bucket.to_string()).await;
+                            let res = s3::list_objects(shared_config, bucket).await;
                             if flags.get_flag("pretty") {
                                 pretty_print(res.unwrap());
                             } else if flags.get_flag("csv") {
@@ -157,8 +157,7 @@ pub async fn run(conf: AWSConfigFile) {
                         }
                         ("versions", flags) => {
                             let bucket = flags.get_one::<String>("bucket").unwrap();
-                            let res =
-                                s3::list_objects_versions(shared_config, bucket.to_string()).await;
+                            let res = s3::list_objects_versions(shared_config, bucket).await;
                             if flags.get_flag("pretty") {
                                 pretty_print(res.unwrap());
                             } else if flags.get_flag("csv") {
@@ -216,7 +215,7 @@ pub async fn run(conf: AWSConfigFile) {
                     match subcommands {
                         ("describe", flags) => {
                             let cluster_id = flags.get_one::<String>("cluster_id").unwrap();
-                            let res = redshift.describe_cluster(String::from(cluster_id)).await;
+                            let res = redshift.describe_cluster(cluster_id).await;
                             println!("{}", res.unwrap());
                         }
                         _ => error!("Unknown input"),
@@ -240,7 +239,7 @@ pub async fn run(conf: AWSConfigFile) {
             match command {
                 ("search", flags) => {
                     let query_string = flags.get_one::<String>("query").unwrap();
-                    let res = resource_explorer.search(query_string.to_string()).await;
+                    let res = resource_explorer.search(query_string).await;
                     if flags.get_flag("pretty") {
                         pretty_print(res.unwrap());
                     } else if flags.get_flag("csv") {

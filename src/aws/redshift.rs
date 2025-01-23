@@ -44,7 +44,7 @@ impl Redshift {
         Self { client }
     }
 
-    pub async fn describe_cluster(&self, cluster_id: String) -> Result<ClusterDescription, Error> {
+    pub async fn describe_cluster(&self, cluster_id: &str) -> Result<ClusterDescription, Error> {
         let mut resp = self
             .client
             .describe_clusters()

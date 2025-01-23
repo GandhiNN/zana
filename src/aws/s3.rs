@@ -56,7 +56,7 @@ pub async fn list_buckets(config: SdkConfig) -> Result<Vec<S3Bucket>, Error> {
     Ok(s3_bucket)
 }
 
-pub async fn list_objects(config: SdkConfig, bucket: String) -> Result<Vec<S3Object>, Error> {
+pub async fn list_objects(config: SdkConfig, bucket: &str) -> Result<Vec<S3Object>, Error> {
     let client = set_client(config).await?;
     let mut list_objects = client
         .list_objects_v2()
@@ -86,7 +86,7 @@ pub async fn list_objects(config: SdkConfig, bucket: String) -> Result<Vec<S3Obj
 
 pub async fn list_objects_versions(
     config: SdkConfig,
-    bucket: String,
+    bucket: &str,
 ) -> Result<Vec<S3ObjectVersion>, Error> {
     let client = set_client(config).await?;
     let list_objects_versions = client.list_object_versions().bucket(bucket).send().await?;

@@ -42,7 +42,7 @@ async fn set_client(config: SdkConfig) -> Result<Client, Error> {
     Ok(client)
 }
 
-pub async fn list_tables(config: SdkConfig, database: String) -> Result<Vec<GlueTable>, Error> {
+pub async fn list_tables(config: SdkConfig, database: &str) -> Result<Vec<GlueTable>, Error> {
     let client = set_client(config).await?;
     let mut list_tables = client
         .get_tables()
@@ -100,7 +100,7 @@ pub async fn list_jobs(config: SdkConfig) -> Result<Vec<GlueJobNames>, Error> {
     Ok(glue_job_names)
 }
 
-pub async fn get_job_runs(config: SdkConfig, job_name: String) -> Result<Vec<GlueJobRun>, Error> {
+pub async fn get_job_runs(config: SdkConfig, job_name: &str) -> Result<Vec<GlueJobRun>, Error> {
     let client = set_client(config).await?;
     let mut job_runs = client
         .get_job_runs()
