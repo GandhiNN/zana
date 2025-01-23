@@ -12,8 +12,10 @@ impl DocDB {
     }
 
     pub async fn describe_clusters(&self) -> Result<(), Error> {
-        let desc_clusters = self.client.describe_db_clusters().into_paginator().send();
-        println!("{:#?}", desc_clusters);
+        let mut desc_clusters = self.client.describe_db_clusters().into_paginator().send();
+        while let Some(output) = desc_clusters.next().await {
+            println!("{:#?}", output);
+        }
         Ok(())
     }
 }
