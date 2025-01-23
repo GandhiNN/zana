@@ -158,12 +158,12 @@ pub fn cmd() -> Command {
                         .arg(arg!(--end <VALUE> "End date. Format: YYYY-MM-DD").required(true))
                         .arg(arg!(--granularity <VALUE> "Report Granularity. Possible values are:\n[daily, hourly, monthly]").required(true))
                         .arg(
-                            arg!(--cost_agg_metrics <VALUE> "Cost Aggregation Metrics. Possible values are:\n[AmortizedCost, BlendedCost, NetAmortizedCost, NetUnblendedCost, NormalizedUsageAmount, UnblendedCost, UsageQuantity]")
+                            arg!(--"cost-aggregation-metrics" <VALUE> "Cost Aggregation Metrics. Possible values are:\n[AmortizedCost, BlendedCost, NetAmortizedCost, NetUnblendedCost, NormalizedUsageAmount, UnblendedCost, UsageQuantity]")
                                 .required(true)
                                 .value_delimiter(',').default_value("UnblendedCost,UsageQuantity") // accept multiple values e.g. "value1,value2"
                         )
-                        .arg(arg!(--group_type <VALUE> "Group by type. Possible values are:\n[dimension, tag, costcategory]").required(true))
-                        .arg(arg!(--group_key <VALUE> "Group by key. Possible values are:\n[az, instance_type, legal, entity_name, invoicing_entity, linked_account, operation, platform, purchase_type, service, tenancy, record_type, usage_type]").required(true))
+                        .arg(arg!(--"group-type" <VALUE> "Group by type. Possible values are:\n[dimension, tag, costcategory]").required(true))
+                        .arg(arg!(--"group-key" <VALUE> "Group by key. Possible values are:\n[az, instance_type, legal, entity_name, invoicing_entity, linked_account, operation, platform, purchase_type, service, tenancy, record_type, usage_type]").required(true))
                         .arg_required_else_help(true),
                 ),
         )

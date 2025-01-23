@@ -260,12 +260,12 @@ pub async fn run(conf: AWSConfigFile) {
                     let end = flags.get_one::<String>("end").unwrap();
                     let granularity = flags.get_one::<String>("granularity").unwrap();
                     let metrics = flags
-                        .get_many::<String>("cost_agg_metrics")
+                        .get_many::<String>("cost-aggregation-metrics")
                         .unwrap()
                         .map(|x| x.to_string())
                         .collect(); // Collect values as vector of owned strings
-                    let group_by_type = flags.get_one::<String>("group_type").unwrap();
-                    let group_by_key = flags.get_one::<String>("group_key").unwrap();
+                    let group_by_type = flags.get_one::<String>("group-type").unwrap();
+                    let group_by_key = flags.get_one::<String>("group-key").unwrap();
                     let _res = cost_explorer
                         .get_cost_and_usage(
                             start,
