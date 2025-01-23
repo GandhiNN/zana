@@ -34,6 +34,8 @@ async fn main() {
             println!("Continuing with outdated config file");
         }
     }
+
+    // Load config file
     let aws_config = AWSConfigFile::new(config_path);
 
     // Handle CLI arguments
