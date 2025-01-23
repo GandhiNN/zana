@@ -18,7 +18,14 @@ async fn main() {
 
     // Conditional check for age of the file
     let config_file_age = get_config_file_age(&config_path);
-    info!("Config file age: {:?}", config_file_age);
+    let age_seconds = &config_file_age.as_secs();
+    let age_hours = age_seconds / 3600;
+    let age_minutes = age_seconds % 3600 / 60;
+    let age_seconds = age_seconds % 3600 % 60;
+    info!(
+        "Config file age: {}h {}m {}s",
+        age_hours, age_minutes, age_seconds
+    );
     if config_file_age > time::Duration::hours(6) {
         info!("Config file is older than 6 hours");
         println!("The program is not guaranteed to run with an outdated config file");
