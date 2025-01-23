@@ -1,5 +1,6 @@
 pub mod config;
 pub mod cost_explorer;
+pub mod docdb;
 pub mod dynamodb;
 pub mod glue;
 pub mod rds;

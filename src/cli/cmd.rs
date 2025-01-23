@@ -167,4 +167,12 @@ pub fn cmd() -> Command {
                         .arg_required_else_help(true),
                 ),
         )
+        .subcommand(
+            Command::new("docdb")
+                .about("DocumentDB API")
+                .subcommand(
+                    Command::new("describe-clusters")
+                        .about("Describe DocumentDB Clusters")
+                )
+        )
 }

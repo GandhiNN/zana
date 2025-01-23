@@ -1,5 +1,6 @@
 use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
 use crate::aws::cost_explorer::CostExplorer;
+use crate::aws::docdb::DocDB;
 use crate::aws::dynamodb::DynamoDB;
 use crate::aws::rds::RDS;
 use crate::aws::redshift::Redshift;
@@ -197,7 +198,7 @@ pub async fn run(conf: AWSConfigFile) {
                     match table_subcommands {
                         ("describe", flags) => {
                             let table_name = flags.get_one::<String>("table_name").unwrap();
-                            let res = ddb.describe_table(String::from(table_name)).await;
+                            let res = ddb.describe_table(table_name).await;
                             println!("{}", res.unwrap());
                         }
                         _ => error!("Unknown input"),
@@ -234,13 +235,12 @@ pub async fn run(conf: AWSConfigFile) {
             }
         }
         Some(("resource-explorer", sub_matches)) => {
+            let resource_explorer = ResourceExplorer::new(shared_config);
             let command = sub_matches.subcommand().unwrap();
             match command {
                 ("search", flags) => {
                     let query_string = flags.get_one::<String>("query").unwrap();
-                    let res = ResourceExplorer::new(shared_config)
-                        .search(query_string.to_string())
-                        .await;
+                    let res = resource_explorer.search(query_string.to_string()).await;
                     if flags.get_flag("pretty") {
                         pretty_print(res.unwrap());
                     } else if flags.get_flag("csv") {
@@ -253,6 +253,7 @@ pub async fn run(conf: AWSConfigFile) {
             }
         }
         Some(("cost-explorer", sub_matches)) => {
+            let cost_explorer = CostExplorer::new(shared_config);
             let command = sub_matches.subcommand().unwrap();
             match command {
                 ("get-cost-and-usage", flags) => {
@@ -266,7 +267,7 @@ pub async fn run(conf: AWSConfigFile) {
                         .collect(); // Collect values as vector of owned strings
                     let group_by_type = flags.get_one::<String>("group_type").unwrap();
                     let group_by_key = flags.get_one::<String>("group_key").unwrap();
-                    let _res = CostExplorer::new(shared_config)
+                    let _res = cost_explorer
                         .get_cost_and_usage(
                             start,
                             end,
@@ -276,6 +277,16 @@ pub async fn run(conf: AWSConfigFile) {
                             group_by_key,
                         )
                         .await;
+                }
+                _ => error!("Unknown input"),
+            }
+        }
+        Some(("docdb", sub_matches)) => {
+            let docdb = DocDB::new(shared_config);
+            let command = sub_matches.subcommand().unwrap();
+            match command {
+                ("describe-clusters", flags) => {
+                    let _res = docdb.describe_clusters().await;
                 }
                 _ => error!("Unknown input"),
             }

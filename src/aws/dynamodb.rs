@@ -69,7 +69,7 @@ impl DynamoDB {
         Ok(ddb_tables)
     }
 
-    pub async fn describe_table(&self, table_name: String) -> Result<TableDescription, Error> {
+    pub async fn describe_table(&self, table_name: &str) -> Result<TableDescription, Error> {
         let mut table_description = TableDescription {
             name: "".to_string(),
             hash_key: "".to_string(),
