@@ -284,8 +284,13 @@ pub async fn run(conf: AWSConfigFile) {
             let docdb = DocDB::new(shared_config);
             let command = sub_matches.subcommand().unwrap();
             match command {
-                ("describe-clusters", flags) => {
+                ("describe-clusters", _) => {
                     let _res = docdb.describe_clusters().await;
+                }
+                ("describe-cluster", flags) => {
+                    let id = flags.get_one::<String>("id").unwrap();
+                    let res = docdb.describe_cluster(id).await;
+                    println!("{}", res.unwrap());
                 }
                 _ => error!("Unknown input"),
             }

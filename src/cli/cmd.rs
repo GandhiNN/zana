@@ -174,5 +174,11 @@ pub fn cmd() -> Command {
                     Command::new("describe-clusters")
                         .about("Describe DocumentDB Clusters")
                 )
+                .subcommand(
+                    Command::new("describe-cluster")
+                        .about("Describe DocumentDB Cluster")
+                        .arg(arg!(--id <VALUE> "DB Cluster ID").required(true))
+                        .arg_required_else_help(true),
+                )
         )
 }
