@@ -7,6 +7,11 @@ use std::env::set_var;
 use std::string::String;
 use std::time;
 
+pub fn get_config_file_age(fpath: &str) -> time::Duration {
+    let metadata = std::fs::metadata(fpath).unwrap();
+    metadata.modified().unwrap().elapsed().unwrap()
+}
+
 pub struct AWSConfigFile {
     config_file_path: String,
 }
