@@ -36,6 +36,7 @@ async fn main() {
             println!("Would you like to continue? (y/n)");
         }
         if input_string.trim() == "n" {
+            println!("Exiting the program!");
             std::process::exit(1);
         } else {
             println!("Continuing with outdated config file");
