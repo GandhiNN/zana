@@ -54,44 +54,25 @@ impl Redshift {
         let mut cluster_desc = ClusterDescription::default();
         while let Some(output) = resp.next().await {
             match output {
-                Ok(mut res) => {
-                    cluster_desc.name = res.clusters.as_mut().unwrap()[0]
-                        .cluster_identifier
-                        .clone()
-                        .unwrap();
-                    cluster_desc.node_type =
-                        res.clusters.as_mut().unwrap()[0].node_type.clone().unwrap();
-                    cluster_desc.status = res.clusters.as_mut().unwrap()[0]
-                        .cluster_status
-                        .clone()
-                        .unwrap();
-                    cluster_desc.master_username = res.clusters.as_mut().unwrap()[0]
-                        .master_username
-                        .clone()
-                        .unwrap();
-                    cluster_desc.db_name =
-                        res.clusters.as_mut().unwrap()[0].db_name.clone().unwrap();
-                    let addr = res.clusters.as_mut().unwrap()[0]
-                        .endpoint
-                        .clone()
+                Ok(res) => {
+                    // println!("{:#?}", res.clusters.unwrap());
+                    let _ = res
+                        .clusters
                         .unwrap()
-                        .address
-                        .unwrap();
-                    let port = res.clusters.as_mut().unwrap()[0]
-                        .endpoint
-                        .clone()
-                        .unwrap()
-                        .port
-                        .unwrap();
-                    cluster_desc.endpoint = format!("{}:{}", addr, port);
-                    cluster_desc.create_time = res.clusters.as_mut().unwrap()[0]
-                        .cluster_create_time
-                        .unwrap()
-                        .to_string();
-                    cluster_desc.encrypted = res.clusters.as_mut().unwrap()[0]
-                        .encrypted
-                        .unwrap()
-                        .to_string();
+                        .into_iter()
+                        .map(|r| {
+                            cluster_desc.name = r.cluster_identifier.clone().unwrap();
+                            cluster_desc.node_type = r.node_type.clone().unwrap();
+                            cluster_desc.status = r.cluster_status.clone().unwrap();
+                            cluster_desc.master_username = r.master_username.clone().unwrap();
+                            cluster_desc.db_name = r.db_name.clone().unwrap();
+                            let addr = r.endpoint.clone().unwrap().address.unwrap();
+                            let port = r.endpoint.clone().unwrap().port.unwrap();
+                            cluster_desc.endpoint = format!("{}:{}", addr, port);
+                            cluster_desc.create_time = r.cluster_create_time.unwrap().to_string();
+                            cluster_desc.encrypted = r.encrypted.unwrap().to_string();
+                        })
+                        .collect::<Vec<()>>(); // Collect to execute the map but ignore the result
                 }
                 Err(e) => println!("{:#?}", e),
             }
