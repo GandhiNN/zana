@@ -61,14 +61,20 @@ impl Redshift {
                         .unwrap()
                         .into_iter()
                         .map(|r| {
-                            cluster_desc.name = r.cluster_identifier.clone().unwrap();
-                            cluster_desc.node_type = r.node_type.clone().unwrap();
-                            cluster_desc.status = r.cluster_status.clone().unwrap();
-                            cluster_desc.master_username = r.master_username.clone().unwrap();
-                            cluster_desc.db_name = r.db_name.clone().unwrap();
-                            let addr = r.endpoint.clone().unwrap().address.unwrap();
-                            let port = r.endpoint.clone().unwrap().port.unwrap();
-                            cluster_desc.endpoint = format!("{}:{}", addr, port);
+                            cluster_desc.name = r.cluster_identifier.unwrap_or_default();
+                            cluster_desc.node_type = r.node_type.unwrap_or_default();
+                            cluster_desc.status = r.cluster_status.unwrap_or_default();
+                            cluster_desc.master_username = r.master_username.unwrap_or_default();
+                            cluster_desc.db_name = r.db_name.unwrap_or_default();
+                            let _e = r // Endpoint is a dict containing address, port, and endpoint.
+                                .endpoint
+                                .into_iter()
+                                .map(|e| {
+                                    let addr = e.address.unwrap();
+                                    let port = e.port.unwrap();
+                                    cluster_desc.endpoint = format!("{}:{}", addr, port);
+                                })
+                                .collect::<Vec<_>>();
                             cluster_desc.create_time = r.cluster_create_time.unwrap().to_string();
                             cluster_desc.encrypted = r.encrypted.unwrap().to_string();
                         })
