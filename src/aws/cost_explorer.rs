@@ -68,7 +68,10 @@ impl CostExplorer {
             .send()
             .await;
         match resp {
-            Ok(output) => Ok(println!("{:#?}", output)),
+            Ok(output) => {
+                println!("{:#?}", output);
+                Ok(())
+            }
             Err(e) => Err(Into::into(e)),
         }
     }
