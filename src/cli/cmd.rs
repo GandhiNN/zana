@@ -103,8 +103,7 @@ pub fn cmd() -> Command {
                         .about("DynamoDB Tables API")
                         .subcommand(
                             Command::new("list")
-                                .arg(arg!(-p --pretty "Pretty print output"))
-                                .arg(arg!(-c --csv "Print output as CSV"))
+                            .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                                 .arg_required_else_help(true),
                         ),
                 )

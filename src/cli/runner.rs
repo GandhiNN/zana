@@ -181,12 +181,11 @@ pub async fn run(conf: AWSConfigFile) {
                     match tables_subcommands {
                         ("list", flags) => {
                             let res = ddb.list_tables().await;
-                            if flags.get_flag("pretty") {
+                            let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                            if *pretty {
                                 pretty_print(res.unwrap());
-                            } else if flags.get_flag("csv") {
-                                let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Please provide print format (--pretty | --csv)")
+                                let _ = write_csv(res.unwrap());
                             }
                         }
                         _ => error!("Unknown input"),
