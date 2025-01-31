@@ -48,7 +48,7 @@ pub async fn run(conf: AWSConfigFile) {
                                     } else if flags.get_flag("csv") {
                                         let _ = write_csv(res.unwrap());
                                     } else {
-                                        error!("Unknown input")
+                                        error!("Please provide print format (--pretty | --csv)")
                                     }
                                 }
                                 _ => error!("Unknown input"),
@@ -61,7 +61,7 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Unknown input")
+                                error!("Please provide print format (--pretty | --csv)")
                             }
                         }
                         (name, _) => {
@@ -79,7 +79,7 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Unknown input")
+                                error!("Please provide print format (--pretty | --csv)")
                             }
                         }
                         _ => error!("Unknown input"),
@@ -96,7 +96,7 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Unknown input")
+                                error!("Please provide print format (--pretty | --csv)")
                             }
                         }
                         _ => error!("Unknown input"),
@@ -116,7 +116,7 @@ pub async fn run(conf: AWSConfigFile) {
                     } else if flags.get_flag("csv") {
                         let _ = write_csv(res.unwrap());
                     } else {
-                        error!("Unknown input")
+                        error!("Please provide print format (--pretty | --csv)")
                     }
                 }
                 _ => error!("Unknown input"),
@@ -135,7 +135,7 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Unknown input")
+                                error!("Please provide print format (--pretty | --csv)")
                             }
                         }
                         _ => error!("Unknown input"),
@@ -152,7 +152,7 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Unknown input")
+                                error!("Please provide print format (--pretty | --csv)")
                             }
                         }
                         ("versions", flags) => {
@@ -163,7 +163,7 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Unknown input")
+                                error!("Please provide print format (--pretty | --csv)")
                             }
                         }
                         _ => error!("Unknown input"),
@@ -186,7 +186,7 @@ pub async fn run(conf: AWSConfigFile) {
                             } else if flags.get_flag("csv") {
                                 let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Unknown input")
+                                error!("Please provide print format (--pretty | --csv)")
                             }
                         }
                         _ => error!("Unknown input"),
@@ -240,12 +240,11 @@ pub async fn run(conf: AWSConfigFile) {
                 ("search", flags) => {
                     let query_string = flags.get_one::<String>("query").unwrap();
                     let res = resource_explorer.search(query_string).await;
-                    if flags.get_flag("pretty") {
+                    let stdout_format = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                    if *stdout_format {
                         pretty_print(res.unwrap());
-                    } else if flags.get_flag("csv") {
-                        let _ = write_csv(res.unwrap());
                     } else {
-                        error!("Unknown input")
+                        let _ = write_csv(res.unwrap());
                     }
                 }
                 _ => error!("Unknown input"),

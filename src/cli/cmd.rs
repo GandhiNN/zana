@@ -1,4 +1,4 @@
-use clap::{arg, command, value_parser, Command};
+use clap::{arg, command, value_parser, ArgAction, Command};
 
 pub fn cmd() -> Command {
     command!()
@@ -143,8 +143,7 @@ pub fn cmd() -> Command {
                     Command::new("search")
                         .about("Search resources")
                         .arg(arg!(--query <VALUE> "Query string").required(true))
-                        .arg(arg!(-p --pretty "Pretty print output"))
-                        .arg(arg!(-c --csv "Print output as CSV"))
+                        .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                         .arg_required_else_help(true),
                 ),
         )
