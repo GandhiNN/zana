@@ -134,7 +134,7 @@ pub fn cmd() -> Command {
                 .subcommand(
                     Command::new("search")
                         .about("Search resources")
-                        .arg(arg!(--query <VALUE> "Query string").required(true))
+                        .arg(arg!(--query <VALUE> "Query string. Reference: https://docs.aws.amazon.com/resource-explorer/latest/userguide/using-search-query-syntax.html").required(true))
                         .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                         .arg_required_else_help(true),
                 ),
