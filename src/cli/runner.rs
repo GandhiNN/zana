@@ -240,8 +240,8 @@ pub async fn run(conf: AWSConfigFile) {
                 ("search", flags) => {
                     let query_string = flags.get_one::<String>("query").unwrap();
                     let res = resource_explorer.search(query_string).await;
-                    let stdout_format = flags.get_one::<bool>("pretty").unwrap_or(&false);
-                    if *stdout_format {
+                    let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                    if *pretty {
                         pretty_print(res.unwrap());
                     } else {
                         let _ = write_csv(res.unwrap());
