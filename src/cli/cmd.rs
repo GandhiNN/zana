@@ -28,16 +28,14 @@ pub fn cmd() -> Command {
                             Command::new("runs").about("Glue job runs API").subcommand(
                                 Command::new("list")
                                     .arg(arg!(-j --jobname <VALUE> "Glue job name").required(true))
-                                    .arg(arg!(-p --pretty "Pretty print output"))
-                                    .arg(arg!(-c --csv "Print output as CSV"))
+                                    .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                                     .arg_required_else_help(true),
                             ),
                         )
                         .subcommand(
                             Command::new("list")
                                 .about("List available Glue jobs")
-                                .arg(arg!(-p --pretty "Pretty print output"))
-                                .arg(arg!(-c --csv "Print output as CSV"))
+                                .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                                 .arg_required_else_help(true),
                         ),
                 )
@@ -46,8 +44,7 @@ pub fn cmd() -> Command {
                         .about("Glue databases API")
                         .subcommand(
                             Command::new("list")
-                                .arg(arg!(-p --pretty "Pretty print output"))
-                                .arg(arg!(-c --csv "Print output as CSV"))
+                                .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                                 .arg_required_else_help(true),
                         ),
                 )
@@ -55,8 +52,7 @@ pub fn cmd() -> Command {
                     Command::new("table").about("Glue table API").subcommand(
                         Command::new("list")
                             .arg(arg!(-d --database <VALUE> "Database name").required(true))
-                            .arg(arg!(-p --pretty "Pretty print output"))
-                            .arg(arg!(-c --csv "Print output as CSV"))
+                            .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                             .arg_required_else_help(true),
                     ),
                 ),
@@ -67,8 +63,7 @@ pub fn cmd() -> Command {
                 .subcommand(
                     Command::new("bucket").about("S3 bucket API").subcommand(
                         Command::new("list")
-                            .arg(arg!(-p --pretty "Pretty print output"))
-                            .arg(arg!(-c --csv "Print output as CSV"))
+                            .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                             .arg_required_else_help(true),
                     ),
                 )
@@ -77,8 +72,7 @@ pub fn cmd() -> Command {
                         Command::new("list")
                             .arg(arg!(-b --bucket <VALUE> "input S3 bucket").required(true))
                             .arg(arg!(-v --versions "List objects versions in an S3 bucket"))
-                            .arg(arg!(-p --pretty "Pretty print output"))
-                            .arg(arg!(-c --csv "Print output as CSV"))
+                            .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                             .arg_required_else_help(true),
                     ),
                 ),
@@ -89,8 +83,7 @@ pub fn cmd() -> Command {
                     .about("RDS Instances API")
                     .subcommand(
                         Command::new("list")
-                            .arg(arg!(-p --pretty "Pretty print output"))
-                            .arg(arg!(-c --csv "Print output as CSV"))
+                            .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                             .arg_required_else_help(true),
                     ),
             ),

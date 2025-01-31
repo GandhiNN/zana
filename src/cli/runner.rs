@@ -43,12 +43,11 @@ pub async fn run(conf: AWSConfigFile) {
                                         flags.get_one::<String>("jobname").unwrap().to_string();
                                     let res =
                                         glue::get_job_runs(shared_config, &glue_job_name).await;
-                                    if flags.get_flag("pretty") {
+                                    let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                                    if *pretty {
                                         pretty_print(res.unwrap());
-                                    } else if flags.get_flag("csv") {
-                                        let _ = write_csv(res.unwrap());
                                     } else {
-                                        error!("Please provide print format (--pretty | --csv)")
+                                        let _ = write_csv(res.unwrap());
                                     }
                                 }
                                 _ => error!("Unknown input"),
@@ -56,12 +55,11 @@ pub async fn run(conf: AWSConfigFile) {
                         }
                         ("list", flags) => {
                             let res = glue::list_jobs(shared_config).await;
-                            if flags.get_flag("pretty") {
+                            let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                            if *pretty {
                                 pretty_print(res.unwrap());
-                            } else if flags.get_flag("csv") {
-                                let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Please provide print format (--pretty | --csv)")
+                                let _ = write_csv(res.unwrap());
                             }
                         }
                         (name, _) => {
@@ -74,12 +72,11 @@ pub async fn run(conf: AWSConfigFile) {
                     match databases_subcommands {
                         ("list", flags) => {
                             let res = glue::list_databases(shared_config).await;
-                            if flags.get_flag("pretty") {
+                            let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                            if *pretty {
                                 pretty_print(res.unwrap());
-                            } else if flags.get_flag("csv") {
-                                let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Please provide print format (--pretty | --csv)")
+                                let _ = write_csv(res.unwrap());
                             }
                         }
                         _ => error!("Unknown input"),
@@ -91,12 +88,11 @@ pub async fn run(conf: AWSConfigFile) {
                         ("list", flags) => {
                             let db = flags.get_one::<String>("database").unwrap();
                             let res = glue::list_tables(shared_config, db).await;
-                            if flags.get_flag("pretty") {
+                            let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                            if *pretty {
                                 pretty_print(res.unwrap());
-                            } else if flags.get_flag("csv") {
-                                let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Please provide print format (--pretty | --csv)")
+                                let _ = write_csv(res.unwrap());
                             }
                         }
                         _ => error!("Unknown input"),
@@ -111,12 +107,11 @@ pub async fn run(conf: AWSConfigFile) {
             match rds_command {
                 ("instances", flags) => {
                     let res = rds.list_instances().await;
-                    if flags.get_flag("pretty") {
+                    let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                    if *pretty {
                         pretty_print(res.unwrap());
-                    } else if flags.get_flag("csv") {
-                        let _ = write_csv(res.unwrap());
                     } else {
-                        error!("Please provide print format (--pretty | --csv)")
+                        let _ = write_csv(res.unwrap());
                     }
                 }
                 _ => error!("Unknown input"),
