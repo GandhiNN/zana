@@ -1,3 +1,4 @@
+use chrono::{DateTime, NaiveDateTime, Utc};
 use csv::Writer;
 use std::error::Error;
 use std::fmt::Debug;
@@ -58,4 +59,9 @@ pub fn write_csv<T: serde::Serialize>(iterables: Vec<T>) -> Result<(), Box<dyn E
     let data = String::from_utf8(writer.into_inner()?)?;
     println!("{}", data);
     Ok(())
+}
+
+pub fn convert_naive_datetime_to_utc(date: &str) -> DateTime<Utc> {
+    let naive_datetime = NaiveDateTime::parse_from_str(date, "%Y-%m-%d %H:%M:%S").unwrap();
+    DateTime::<Utc>::from_naive_utc_and_offset(naive_datetime, Utc)
 }
