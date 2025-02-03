@@ -71,6 +71,7 @@ pub fn cmd() -> Command {
                     Command::new("objects").about("S3 objects API").subcommand(
                         Command::new("list")
                             .arg(arg!(-b --bucket <VALUE> "input S3 bucket").required(true))
+                            .arg(arg!(-m --"last-modified-time" <VALUE> "last modified time of the objects [YYYY-mm-dd HH:MM:SS]").default_value("1970-01-01 00:00:00"))
                             .arg(arg!(-v --versions "List objects versions in an S3 bucket"))
                             .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                             .arg_required_else_help(true),

@@ -1,5 +1,8 @@
+use crate::util::convert_naive_datetime_to_utc;
+use anyhow::Result;
 use aws_sdk_s3::{Client, Error};
 use aws_types::SdkConfig;
+use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tabled::Tabled;
 
@@ -56,7 +59,11 @@ pub async fn list_buckets(config: SdkConfig) -> Result<Vec<S3Bucket>, Error> {
     Ok(s3_bucket)
 }
 
-pub async fn list_objects(config: SdkConfig, bucket: &str) -> Result<Vec<S3Object>, Error> {
+pub async fn list_objects(
+    config: SdkConfig,
+    bucket: &str,
+    last_modified_date: &str,
+) -> Result<Vec<S3Object>> {
     let client = set_client(config).await?;
     let mut list_objects = client
         .list_objects_v2()
@@ -64,18 +71,28 @@ pub async fn list_objects(config: SdkConfig, bucket: &str) -> Result<Vec<S3Objec
         .into_paginator()
         .send();
     let mut s3_objects: Vec<S3Object> = Vec::new();
+    let last_mod_time: DateTime<Utc> = convert_naive_datetime_to_utc(last_modified_date);
     while let Some(list_objects_v2_output) = list_objects.next().await {
         match list_objects_v2_output {
             Ok(list_objects) => {
                 let objects = list_objects.contents();
                 for object in objects {
-                    s3_objects.push(S3Object {
-                        obj_key: object.key().unwrap().to_string(),
-                        obj_last_modified_at: object.last_modified().unwrap().to_string(),
-                        obj_etag: object.e_tag().unwrap().to_string(),
-                        obj_size: object.size().unwrap(),
-                        obj_storage_class: object.storage_class().unwrap().to_string(),
-                    });
+                    if object
+                        .last_modified()
+                        .unwrap()
+                        .to_string()
+                        .parse::<DateTime<Utc>>()
+                        .unwrap()
+                        > last_mod_time
+                    {
+                        s3_objects.push(S3Object {
+                            obj_key: object.key().unwrap().to_string(),
+                            obj_last_modified_at: object.last_modified().unwrap().to_string(),
+                            obj_etag: object.e_tag().unwrap().to_string(),
+                            obj_size: object.size().unwrap(),
+                            obj_storage_class: object.storage_class().unwrap().to_string(),
+                        });
+                    }
                 }
             }
             Err(e) => return Err(e.into()),

@@ -141,13 +141,14 @@ pub async fn run(conf: AWSConfigFile) {
                     match objects_subcommands {
                         ("list", flags) => {
                             let bucket = flags.get_one::<String>("bucket").unwrap();
-                            let res = s3::list_objects(shared_config, bucket).await;
-                            if flags.get_flag("pretty") {
+                            let last_mod_time =
+                                flags.get_one::<String>("last-modified-time").unwrap();
+                            let res = s3::list_objects(shared_config, bucket, last_mod_time).await;
+                            let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                            if *pretty {
                                 pretty_print(res.unwrap());
-                            } else if flags.get_flag("csv") {
-                                let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Please provide print format (--pretty | --csv)")
+                                let _ = write_csv(res.unwrap());
                             }
                         }
                         ("versions", flags) => {
