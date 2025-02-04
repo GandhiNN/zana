@@ -125,12 +125,11 @@ pub async fn run(conf: AWSConfigFile) {
                     match bucket_subcommands {
                         ("list", flags) => {
                             let res = s3::list_buckets(shared_config).await;
-                            if flags.get_flag("pretty") {
+                            let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                            if *pretty {
                                 pretty_print(res.unwrap());
-                            } else if flags.get_flag("csv") {
-                                let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Please provide print format (--pretty | --csv)")
+                                let _ = write_csv(res.unwrap());
                             }
                         }
                         _ => error!("Unknown input"),
@@ -157,12 +156,11 @@ pub async fn run(conf: AWSConfigFile) {
                         ("versions", flags) => {
                             let bucket = flags.get_one::<String>("bucket").unwrap();
                             let res = s3::list_objects_versions(shared_config, bucket).await;
-                            if flags.get_flag("pretty") {
+                            let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                            if *pretty {
                                 pretty_print(res.unwrap());
-                            } else if flags.get_flag("csv") {
-                                let _ = write_csv(res.unwrap());
                             } else {
-                                error!("Please provide print format (--pretty | --csv)")
+                                let _ = write_csv(res.unwrap());
                             }
                         }
                         _ => error!("Unknown input"),
