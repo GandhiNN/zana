@@ -1,6 +1,8 @@
+use anyhow::Result;
 use aws_sdk_glue::{Client, Error};
 use aws_types::SdkConfig;
 use serde::Serialize;
+use std::fmt;
 use tabled::Tabled;
 
 #[derive(Tabled, Debug, Serialize)]
@@ -35,6 +37,26 @@ pub struct GlueJobRun {
     name: String,
     state: String,
     dpu_seconds: f64,
+}
+
+pub struct GlueJobBookmark {
+    job_name: String,
+    version: String,
+    run: String,
+    attempt: String,
+    run_id: String,
+    bookmark: String,
+}
+
+impl fmt::Display for GlueJobBookmark {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "-------------------\nJob Bookmark Description\n-------------------\n 
+Job Name: {}\nVersion: {}\nRun: {}\nAttempt: {}\nRun ID: {}\nDescription: {}\n",
+            self.job_name, self.version, self.run, self.attempt, self.run_id, self.bookmark,
+        )
+    }
 }
 
 async fn set_client(config: SdkConfig) -> Result<Client, Error> {
@@ -124,6 +146,54 @@ pub async fn get_job_runs(config: SdkConfig, job_name: &str) -> Result<Vec<GlueJ
         }
     }
     Ok(glue_job_runs)
+}
+
+pub async fn get_job_bookmark(config: SdkConfig, job_name: &str) -> Result<(), Error> {
+    let client = set_client(config).await?;
+    let job_bookmark = client.get_job_bookmark().job_name(job_name).send().await?;
+    let bookmark_output = GlueJobBookmark {
+        job_name: job_bookmark
+            .clone()
+            .job_bookmark_entry
+            .unwrap()
+            .job_name
+            .unwrap()
+            .to_string(),
+        version: job_bookmark
+            .clone()
+            .job_bookmark_entry
+            .unwrap()
+            .version
+            .to_string(),
+        run: job_bookmark
+            .clone()
+            .job_bookmark_entry
+            .unwrap()
+            .run
+            .to_string(),
+        attempt: job_bookmark
+            .clone()
+            .job_bookmark_entry
+            .unwrap()
+            .attempt
+            .to_string(),
+        run_id: job_bookmark
+            .clone()
+            .job_bookmark_entry
+            .unwrap()
+            .run_id
+            .unwrap()
+            .to_string(),
+        bookmark: job_bookmark
+            .clone()
+            .job_bookmark_entry
+            .unwrap()
+            .job_bookmark
+            .unwrap()
+            .to_string(),
+    };
+    println!("{}", bookmark_output);
+    Ok(())
 }
 
 pub async fn list_databases(config: SdkConfig) -> Result<Vec<GlueDatabase>, Error> {

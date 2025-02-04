@@ -27,7 +27,7 @@ pub fn cmd() -> Command {
                         .subcommand(
                             Command::new("runs").about("Glue job runs API").subcommand(
                                 Command::new("list")
-                                    .arg(arg!(-j --jobname <VALUE> "Glue job name").required(true))
+                                    .arg(arg!(-j --"job-name" <VALUE> "Glue job name").required(true))
                                     .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                                     .arg_required_else_help(true),
                             ),
@@ -37,7 +37,13 @@ pub fn cmd() -> Command {
                                 .about("List available Glue jobs")
                                 .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                                 .arg_required_else_help(true),
-                        ),
+                        )
+                        .subcommand(
+                            Command::new("bookmark")
+                                .about("Get Glue job bookmark")
+                                .arg(arg!(-j --"job-name" <VALUE> "Glue job name").required(true))
+                                .arg_required_else_help(true),
+                        )
                 )
                 .subcommand(
                     Command::new("databases")

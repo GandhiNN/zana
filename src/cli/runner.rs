@@ -40,7 +40,7 @@ pub async fn run(conf: AWSConfigFile) {
                             match runs_subcommands {
                                 ("list", flags) => {
                                     let glue_job_name =
-                                        flags.get_one::<String>("jobname").unwrap().to_string();
+                                        flags.get_one::<String>("job-name").unwrap().to_string();
                                     let res =
                                         glue::get_job_runs(shared_config, &glue_job_name).await;
                                     let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
@@ -61,6 +61,11 @@ pub async fn run(conf: AWSConfigFile) {
                             } else {
                                 let _ = write_csv(res.unwrap());
                             }
+                        }
+                        ("bookmark", flags) => {
+                            let glue_job_name =
+                                flags.get_one::<String>("job-name").unwrap().to_string();
+                            let _ = glue::get_job_bookmark(shared_config, &glue_job_name).await;
                         }
                         (name, _) => {
                             unreachable!("Unknown subcommand `{name}`")
