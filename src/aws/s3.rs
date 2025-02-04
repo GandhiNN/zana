@@ -62,12 +62,14 @@ pub async fn list_buckets(config: SdkConfig) -> Result<Vec<S3Bucket>, Error> {
 pub async fn list_objects(
     config: SdkConfig,
     bucket: &str,
+    prefix: &str,
     last_modified_date: &str,
 ) -> Result<Vec<S3Object>> {
     let client = set_client(config).await?;
     let mut list_objects = client
         .list_objects_v2()
         .bucket(bucket)
+        .prefix(prefix)
         .into_paginator()
         .send();
     let mut s3_objects: Vec<S3Object> = Vec::new();
