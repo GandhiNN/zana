@@ -151,48 +151,23 @@ pub async fn get_job_runs(config: SdkConfig, job_name: &str) -> Result<Vec<GlueJ
 pub async fn get_job_bookmark(config: SdkConfig, job_name: &str) -> Result<(), Error> {
     let client = set_client(config).await?;
     let job_bookmark = client.get_job_bookmark().job_name(job_name).send().await?;
-    let bookmark_output = GlueJobBookmark {
-        job_name: job_bookmark
-            .clone()
-            .job_bookmark_entry
-            .unwrap()
-            .job_name
-            .unwrap()
-            .to_string(),
-        version: job_bookmark
-            .clone()
-            .job_bookmark_entry
-            .unwrap()
-            .version
-            .to_string(),
-        run: job_bookmark
-            .clone()
-            .job_bookmark_entry
-            .unwrap()
-            .run
-            .to_string(),
-        attempt: job_bookmark
-            .clone()
-            .job_bookmark_entry
-            .unwrap()
-            .attempt
-            .to_string(),
-        run_id: job_bookmark
-            .clone()
-            .job_bookmark_entry
-            .unwrap()
-            .run_id
-            .unwrap()
-            .to_string(),
-        bookmark: job_bookmark
-            .clone()
-            .job_bookmark_entry
-            .unwrap()
-            .job_bookmark
-            .unwrap()
-            .to_string(),
-    };
-    println!("{}", bookmark_output);
+    match job_bookmark.job_bookmark_entry {
+        Some(v) => {
+            let bookmark_output = GlueJobBookmark {
+                job_name: v.job_name.unwrap().to_string(),
+                version: v.version.to_string(),
+                run: v.run.to_string(),
+                attempt: v.attempt.to_string(),
+                run_id: v.run_id.unwrap().to_string(),
+                bookmark: v.job_bookmark.unwrap().to_string(),
+            };
+            println!("{}", bookmark_output);
+        }
+        None => {
+            println!("No bookmark found for job: {}", job_name);
+            return Ok(());
+        }
+    }
     Ok(())
 }
 
