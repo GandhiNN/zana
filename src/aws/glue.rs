@@ -39,13 +39,14 @@ pub struct GlueJobRun {
     dpu_seconds: f64,
 }
 
+#[derive(Debug)]
 pub struct GlueJobBookmark {
     job_name: String,
     version: String,
     run: String,
     attempt: String,
     run_id: String,
-    bookmark: String,
+    description: String,
 }
 
 impl fmt::Display for GlueJobBookmark {
@@ -54,7 +55,7 @@ impl fmt::Display for GlueJobBookmark {
             f,
             "-------------------\nJob Bookmark Description\n-------------------\n 
 Job Name: {}\nVersion: {}\nRun: {}\nAttempt: {}\nRun ID: {}\nDescription: {}\n",
-            self.job_name, self.version, self.run, self.attempt, self.run_id, self.bookmark,
+            self.job_name, self.version, self.run, self.attempt, self.run_id, self.description,
         )
     }
 }
@@ -159,7 +160,7 @@ pub async fn get_job_bookmark(config: SdkConfig, job_name: &str) -> Result<(), E
                 run: v.run.to_string(),
                 attempt: v.attempt.to_string(),
                 run_id: v.run_id.unwrap().to_string(),
-                bookmark: v.job_bookmark.unwrap().to_string(),
+                description: v.job_bookmark.unwrap().to_string(),
             };
             println!("{}", bookmark_output);
         }
