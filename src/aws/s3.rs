@@ -64,6 +64,7 @@ pub async fn list_objects(
     bucket: &str,
     prefix: &str,
     last_modified_date: &str,
+    predicate: &str,
 ) -> Result<Vec<S3Object>> {
     let client = set_client(config).await?;
     let mut list_objects = client
@@ -78,22 +79,43 @@ pub async fn list_objects(
         match list_objects_v2_output {
             Ok(list_objects) => {
                 let objects = list_objects.contents();
-                for object in objects {
-                    if object
-                        .last_modified()
-                        .unwrap()
-                        .to_string()
-                        .parse::<DateTime<Utc>>()
-                        .unwrap()
-                        > last_mod_time
-                    {
-                        s3_objects.push(S3Object {
-                            obj_key: object.key().unwrap().to_string(),
-                            obj_last_modified_at: object.last_modified().unwrap().to_string(),
-                            obj_etag: object.e_tag().unwrap().to_string(),
-                            obj_size: object.size().unwrap(),
-                            obj_storage_class: object.storage_class().unwrap().to_string(),
-                        });
+                if predicate == "newer" {
+                    for object in objects {
+                        if object
+                            .last_modified()
+                            .unwrap()
+                            .to_string()
+                            .parse::<DateTime<Utc>>()
+                            .unwrap()
+                            > last_mod_time
+                        {
+                            s3_objects.push(S3Object {
+                                obj_key: object.key().unwrap().to_string(),
+                                obj_last_modified_at: object.last_modified().unwrap().to_string(),
+                                obj_etag: object.e_tag().unwrap().to_string(),
+                                obj_size: object.size().unwrap(),
+                                obj_storage_class: object.storage_class().unwrap().to_string(),
+                            });
+                        }
+                    }
+                } else if predicate == "older" {
+                    for object in objects {
+                        if object
+                            .last_modified()
+                            .unwrap()
+                            .to_string()
+                            .parse::<DateTime<Utc>>()
+                            .unwrap()
+                            < last_mod_time
+                        {
+                            s3_objects.push(S3Object {
+                                obj_key: object.key().unwrap().to_string(),
+                                obj_last_modified_at: object.last_modified().unwrap().to_string(),
+                                obj_etag: object.e_tag().unwrap().to_string(),
+                                obj_size: object.size().unwrap(),
+                                obj_storage_class: object.storage_class().unwrap().to_string(),
+                            });
+                        }
                     }
                 }
             }

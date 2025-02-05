@@ -148,9 +148,15 @@ pub async fn run(conf: AWSConfigFile) {
                             let prefix = flags.get_one::<String>("prefix").unwrap();
                             let last_mod_time =
                                 flags.get_one::<String>("last-modified-time").unwrap();
-                            let res =
-                                s3::list_objects(shared_config, bucket, prefix, last_mod_time)
-                                    .await;
+                            let predicate = flags.get_one::<String>("predicate").unwrap();
+                            let res = s3::list_objects(
+                                shared_config,
+                                bucket,
+                                prefix,
+                                last_mod_time,
+                                predicate,
+                            )
+                            .await;
                             let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
                             if *pretty {
                                 pretty_print(res.unwrap());

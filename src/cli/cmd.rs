@@ -78,7 +78,12 @@ pub fn cmd() -> Command {
                         Command::new("list")
                             .arg(arg!(-b --bucket <VALUE> "input S3 bucket").required(true))
                             .arg(arg!(-r --prefix <VALUE> "Key prefix").required(true))
-                            .arg(arg!(-m --"last-modified-time" <VALUE> "last modified time of the objects [YYYY-mm-dd HH:MM:SS]").default_value("1970-01-01 00:00:00"))
+                            .arg(arg!(-m --"last-modified-time" <VALUE> "last modified time of the objects [YYYY-mm-dd HH:MM:SS]")
+                                .required(true)
+                                .default_value("1970-01-01 00:00:00"))
+                            .arg(arg!(-g --predicate <VALUE> "predicate to filter objects [newer, older]")
+                                .required(true)
+                                .default_value("newer"))
                             .arg(arg!(-v --versions "List objects versions in an S3 bucket"))
                             .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                             .arg_required_else_help(true),
