@@ -1,9 +1,16 @@
 use aws_sdk_bedrockruntime::{primitives::Blob, Client, Error};
 use aws_types::SdkConfig;
+use serde::Serialize;
 use std::str;
 
 pub struct Bedrock {
     pub client: Client,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PromptBody {
+    input_text: String,
 }
 
 impl Bedrock {
@@ -13,18 +20,21 @@ impl Bedrock {
     }
 
     pub async fn invoke_prompt(&self, model: &str, prompt: &str) -> Result<(), Error> {
+        let input_prompt = PromptBody {
+            input_text: prompt.to_string(),
+        };
         let result = self
             .client
             .invoke_model()
             .model_id(model)
             .content_type("application/json")
-            .body(Blob::new(serde_json::to_string(prompt).unwrap()))
+            .body(Blob::new(serde_json::to_string(&input_prompt).unwrap()))
             .send()
             .await
             .unwrap();
 
         let output = str::from_utf8(result.body().as_ref()).unwrap();
-        println!("{}", output);
+        println!("{:#?}", output);
         Ok(())
     }
 }
