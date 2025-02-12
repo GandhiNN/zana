@@ -1,3 +1,4 @@
+use crate::aws::bedrock::Bedrock;
 use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
 use crate::aws::cost_explorer::CostExplorer;
 use crate::aws::docdb::DocDB;
@@ -297,6 +298,24 @@ pub async fn run(conf: AWSConfigFile) {
                     let id = flags.get_one::<String>("id").unwrap();
                     let res = docdb.describe_cluster(id).await;
                     println!("{}", res.unwrap());
+                }
+                _ => error!("Unknown input"),
+            }
+        }
+        Some(("bedrock", sub_matches)) => {
+            let bedrock: Bedrock = Bedrock::new(shared_config);
+            let bedrock_command = sub_matches.subcommand().unwrap();
+            match bedrock_command {
+                ("runtime", sub_matches) => {
+                    let runtime_subcommands = sub_matches.subcommand().unwrap();
+                    match runtime_subcommands {
+                        ("invoke-prompt", flags) => {
+                            let model = flags.get_one::<String>("model").unwrap();
+                            let prompt = flags.get_one::<String>("prompt").unwrap();
+                            let _res = bedrock.invoke_prompt(model, prompt).await;
+                        }
+                        _ => error!("Unknown input"),
+                    }
                 }
                 _ => error!("Unknown input"),
             }

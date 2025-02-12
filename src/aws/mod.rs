@@ -1,3 +1,4 @@
+pub mod bedrock;
 pub mod config;
 pub mod cost_explorer;
 pub mod docdb;

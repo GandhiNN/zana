@@ -184,4 +184,16 @@ pub fn cmd() -> Command {
                         .arg_required_else_help(true),
                 )
         )
+        .subcommand(
+            Command::new("bedrock")
+                .about("Amazon Bedrock API")
+                .subcommand(
+                    Command::new("runtime").about("Bedrock runtime API").subcommand(
+                        Command::new("invoke-prompt")
+                        .arg(arg!(--model <VALUE> "Bedrock foundational model ID").required(true))
+                        .arg(arg!(--prompt <VALUE> "Prompt to send to the model").required(true))
+                        .arg_required_else_help(true),
+                    ),
+                )
+        )
 }
