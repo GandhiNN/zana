@@ -1,4 +1,5 @@
 use crate::aws::bedrock::Bedrock;
+use crate::aws::bedrock_runtime::BedrockRuntime;
 use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
 use crate::aws::cost_explorer::CostExplorer;
 use crate::aws::docdb::DocDB;
@@ -303,16 +304,26 @@ pub async fn run(conf: AWSConfigFile) {
             }
         }
         Some(("bedrock", sub_matches)) => {
-            let bedrock: Bedrock = Bedrock::new(shared_config);
+            let bedrock = Bedrock::new(shared_config.clone());
+            let bedrock_runtime: BedrockRuntime = BedrockRuntime::new(shared_config.clone());
             let bedrock_command = sub_matches.subcommand().unwrap();
             match bedrock_command {
+                ("mgmt", sub_matches) => {
+                    let mgmt_subcommands = sub_matches.subcommand().unwrap();
+                    match mgmt_subcommands {
+                        ("list-foundational-models", _) => {
+                            let _res = bedrock.list_foundational_models().await;
+                        }
+                        _ => error!("Unknown input!"),
+                    }
+                }
                 ("runtime", sub_matches) => {
                     let runtime_subcommands = sub_matches.subcommand().unwrap();
                     match runtime_subcommands {
                         ("invoke-prompt", flags) => {
                             let model = flags.get_one::<String>("model").unwrap();
                             let prompt = flags.get_one::<String>("prompt").unwrap();
-                            let _res = bedrock.invoke_prompt(model, prompt).await;
+                            let _res = bedrock_runtime.invoke_prompt(model, prompt).await;
                         }
                         _ => error!("Unknown input"),
                     }

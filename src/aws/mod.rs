@@ -1,4 +1,5 @@
 pub mod bedrock;
+pub mod bedrock_runtime;
 pub mod config;
 pub mod cost_explorer;
 pub mod docdb;

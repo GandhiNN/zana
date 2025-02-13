@@ -188,6 +188,11 @@ pub fn cmd() -> Command {
             Command::new("bedrock")
                 .about("Amazon Bedrock API")
                 .subcommand(
+                    Command::new("mgmt").about("Bedrock management API").subcommand(
+                        Command::new("list-foundational-models")
+                    )
+                )
+                .subcommand(
                     Command::new("runtime").about("Bedrock runtime API").subcommand(
                         Command::new("invoke-prompt")
                         .arg(arg!(--model <VALUE> "Bedrock foundational model ID").required(true))
