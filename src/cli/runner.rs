@@ -311,8 +311,14 @@ pub async fn run(conf: AWSConfigFile) {
                 ("mgmt", sub_matches) => {
                     let mgmt_subcommands = sub_matches.subcommand().unwrap();
                     match mgmt_subcommands {
-                        ("list-foundational-models", _) => {
-                            let _res = bedrock.list_foundational_models().await;
+                        ("list-foundational-models", flags) => {
+                            let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                            let res = bedrock.list_foundational_models().await;
+                            if *pretty {
+                                pretty_print(res.unwrap());
+                            } else {
+                                let _ = write_csv(res.unwrap());
+                            }
                         }
                         _ => error!("Unknown input!"),
                     }

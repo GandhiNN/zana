@@ -190,6 +190,9 @@ pub fn cmd() -> Command {
                 .subcommand(
                     Command::new("mgmt").about("Bedrock management API").subcommand(
                         Command::new("list-foundational-models")
+                            .about("List foundational models")
+                            .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
+                            .arg_required_else_help(true),
                     )
                 )
                 .subcommand(
