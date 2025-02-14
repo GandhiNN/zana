@@ -4,10 +4,11 @@ use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
 use crate::aws::cost_explorer::CostExplorer;
 use crate::aws::docdb::DocDB;
 use crate::aws::dynamodb::DynamoDB;
+use crate::aws::glue::Glue;
 use crate::aws::rds::RDS;
 use crate::aws::redshift::Redshift;
 use crate::aws::resource_explorer::ResourceExplorer;
-use crate::aws::{config, glue, s3};
+use crate::aws::{config, s3};
 use crate::cli::cmd;
 use crate::util::{pretty_print, write_csv};
 use tracing::{error, info};
@@ -32,6 +33,7 @@ pub async fn run(conf: AWSConfigFile) {
     // Match commands and subcommands input
     match matches.subcommand() {
         Some(("glue", sub_matches)) => {
+            let glue = Glue::new(shared_config); // Initialize Glue client object
             let glue_command = sub_matches.subcommand().unwrap();
             match glue_command {
                 ("job", sub_matches) => {
@@ -43,8 +45,7 @@ pub async fn run(conf: AWSConfigFile) {
                                 ("list", flags) => {
                                     let glue_job_name =
                                         flags.get_one::<String>("job-name").unwrap().to_string();
-                                    let res =
-                                        glue::get_job_runs(shared_config, &glue_job_name).await;
+                                    let res = glue.get_job_runs(&glue_job_name).await;
                                     let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
                                     if *pretty {
                                         pretty_print(res.unwrap());
@@ -56,7 +57,7 @@ pub async fn run(conf: AWSConfigFile) {
                             }
                         }
                         ("list", flags) => {
-                            let res = glue::list_jobs(shared_config).await;
+                            let res = glue.list_jobs().await;
                             let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
                             if *pretty {
                                 pretty_print(res.unwrap());
@@ -67,7 +68,7 @@ pub async fn run(conf: AWSConfigFile) {
                         ("bookmark", flags) => {
                             let glue_job_name =
                                 flags.get_one::<String>("job-name").unwrap().to_string();
-                            let _ = glue::get_job_bookmark(shared_config, &glue_job_name).await;
+                            let _ = glue.get_job_bookmark(&glue_job_name).await;
                         }
                         (name, _) => {
                             unreachable!("Unknown subcommand `{name}`")
@@ -78,7 +79,7 @@ pub async fn run(conf: AWSConfigFile) {
                     let databases_subcommands = sub_matches.subcommand().unwrap();
                     match databases_subcommands {
                         ("list", flags) => {
-                            let res = glue::list_databases(shared_config).await;
+                            let res = glue.list_databases().await;
                             let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
                             if *pretty {
                                 pretty_print(res.unwrap());
@@ -94,7 +95,7 @@ pub async fn run(conf: AWSConfigFile) {
                     match table_subcommands {
                         ("list", flags) => {
                             let db = flags.get_one::<String>("database").unwrap();
-                            let res = glue::list_tables(shared_config, db).await;
+                            let res = glue.list_tables(db).await;
                             let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
                             if *pretty {
                                 pretty_print(res.unwrap());
