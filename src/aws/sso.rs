@@ -117,12 +117,16 @@ impl Sso {
         Self { client }
     }
     pub async fn configure_sso(&self, config: SdkConfig) -> Result<()> {
-        let start_url = Text::new("SSO start-url:").prompt()?;
-        let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
-        let sso_region = Select::new("SSO region:", regions).prompt()?;
         let home_dir = get_home_dir();
         let aws_config_dir = get_config_dir(&home_dir).unwrap();
         let aws_config_file = aws_config_dir.join("config");
+
+        let start_url = Text::new("SSO start-url:").prompt()?;
+        let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
+        let sso_region = Select::new("SSO region:", regions).prompt()?;
+
+        // Session token retrieval phase
+        println!("Retrieving Access Token...");
         let session_name = session_name(start_url.as_str());
         let token_provider =
             SsoAccessTokenProvider::new(&config, session_name.as_str(), &aws_config_dir)?;
@@ -130,8 +134,6 @@ impl Sso {
 
         // Register client device and retrieve the access token
         let access_token = token_provider.get_access_token(&start_url).await?;
-        println!("{:?}", access_token);
-        println!("{}", session_name);
 
         // Get the available SSO accounts from SSO start page
         let mut sso_accounts = account_info_provider
