@@ -1,9 +1,11 @@
 use crate::utils::json;
 use crate::utils::serde::json_date_format;
 use anyhow::Result;
+use aws_config::SdkConfig;
 use aws_sdk_ssooidc::Client;
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -66,5 +68,29 @@ pub struct DeviceClient {
 impl DeviceClient {
     pub fn is_expired(&self) -> bool {
         self.registration_expires_at < Utc::now()
+    }
+}
+
+pub struct SsoAccessTokenProvider {
+    sso_session_name: String,
+    client: Client,
+    cache: AccessTokenCache,
+}
+
+impl SsoAccessTokenProvider {
+    const CLIENT_NAME: &str = "zana-rs";
+    const DEVICE_GRANT_TYPE: &str = "urn:ietf:params:oauth:grant-type:device_code";
+    const REFRESH_GRANT_TYPE: &str = "refresh_token";
+
+    pub fn new(config: &SdkConfig, sso_session_name: &str, config_dir: &Path) -> Result<Self> {
+        let sso_cache_dir = config_dir.join("sso").join("cache");
+        if !sso_cache_dir.exists() {
+            fs::create_dir_all(&sso_cache_dir)?;
+        }
+        Ok(Self {
+            sso_session_name: String::from(sso_session_name),
+            client: Client::new(config),
+            cache: AccessTokenCache::new(sso_session_name, sso_cache_dir.as_path()),
+        })
     }
 }

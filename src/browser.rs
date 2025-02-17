@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use crate::util;
+use crate::utils;
 use ini::ini;
 use std::collections::HashMap;
 use std::fs;
@@ -37,7 +37,7 @@ impl RuntimeOS {
     pub fn url_browser_menu(self, browser: Browser) {
         let mut url_map = browser.load_url_config();
         browser.print_url_map(&mut url_map);
-        let opt = util::read_from_stdin();
+        let opt = utils::common::read_from_stdin();
         let url = match opt {
             Ok(buf) => buf,
             Err(error) => panic!("{}", error),
