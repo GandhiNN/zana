@@ -8,7 +8,7 @@ use crate::aws::glue::Glue;
 use crate::aws::rds::RDS;
 use crate::aws::redshift::Redshift;
 use crate::aws::resource_explorer::ResourceExplorer;
-use crate::aws::sso::configure_sso;
+use crate::aws::sso::Sso;
 use crate::aws::{config, s3};
 use crate::cli::cmd;
 use crate::utils::common::{pretty_print, write_csv};
@@ -341,13 +341,14 @@ pub async fn run(conf: AWSConfigFile) {
             }
         }
         Some(("sso", sub_matches)) => {
+            let sso = Sso::new(shared_config.clone());
             let sso_subcommands = sub_matches.subcommand().unwrap();
             match sso_subcommands {
                 ("oidc", sub_matches) => {
                     let subcommands = sub_matches.subcommand().unwrap();
                     match subcommands {
                         ("configure", _) => {
-                            let res = configure_sso();
+                            let res = sso.configure_sso(shared_config).await;
                             println!("{}", res.unwrap());
                         }
                         _ => error!("Unknown input"),

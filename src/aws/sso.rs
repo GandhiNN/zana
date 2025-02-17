@@ -3,11 +3,14 @@ use crate::aws::sso_token::AccessToken;
 use anyhow::Result;
 use aws_config::SdkConfig;
 use aws_sdk_sso::Client;
+use directories::UserDirs;
 use inquire::{InquireError, Select, Text};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
+
+use super::sso_token::SsoAccessTokenProvider;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -102,18 +105,70 @@ impl AccountInfoProvider {
     }
 }
 
-pub fn configure_sso() -> Result<SsoConfig, InquireError> {
-    let start_url = Text::new("SSO start-url:").prompt()?;
-    let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
-    let sso_region = Select::new("SSO region:", regions).prompt()?;
-    Ok(SsoConfig {
-        start_url,
-        region: sso_region,
-    })
+pub struct Sso {
+    client: Client,
+}
+
+impl Sso {
+    pub fn new(config: SdkConfig) -> Self {
+        let client = Client::new(&config);
+        Self { client }
+    }
+    pub async fn configure_sso(&self, config: SdkConfig) -> Result<SsoConfig> {
+        let start_url = Text::new("SSO start-url:").prompt()?;
+        let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
+        let sso_region = Select::new("SSO region:", regions).prompt()?;
+        let home_dir = get_home_dir();
+        let aws_config_dir = get_config_dir(&home_dir).unwrap();
+        let session_name = session_name(start_url.as_str());
+        let token_provider =
+            SsoAccessTokenProvider::new(&config, session_name.as_str(), &aws_config_dir)?;
+        let account_info_provider = AccountInfoProvider::new(&config);
+
+        // Register client device and retrieve the access token
+        let access_token = token_provider.get_access_token(&start_url).await?;
+        println!("{:?}", access_token);
+        println!("{}", session_name);
+
+        // Get the available SSO accounts from SSO start page
+        let mut sso_accounts = account_info_provider
+            .get_account_list(&access_token)
+            .await?;
+        sso_accounts.sort();
+        let selected_account = Select::new("Select account:", sso_accounts).prompt()?;
+
+        // Get the available roles from the selected SSO account
+        let mut roles = account_info_provider
+            .get_roles_for_account(&access_token, &selected_account)
+            .await?;
+        roles.sort();
+        let selected_role = Select::new("Select role:", roles).prompt()?;
+
+        // Create AWS profile
+        // TBC
+
+        Ok(SsoConfig {
+            start_url,
+            region: sso_region,
+        })
+    }
+}
+
+pub fn session_name(start_url: &str) -> String {
+    let start_url_without_schema = start_url.replace("https://", "");
+    let (subdomain, _) = start_url_without_schema.split_once(".").unwrap();
+
+    format!("sso-{}", &subdomain)
+}
+
+fn get_home_dir() -> PathBuf {
+    let user_dirs = UserDirs::new().expect("Could not resolve user HOME.");
+    let home_dir = user_dirs.home_dir();
+    home_dir.to_path_buf()
 }
 
 pub fn get_config_dir(home_dir: &Path) -> Result<PathBuf> {
-    let config_dir = home_dir.join(".awseasysso");
+    let config_dir = home_dir.join(".aws_sso");
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)?;
     }
