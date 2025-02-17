@@ -1,7 +1,10 @@
 use crate::aws::region;
+use anyhow::Result;
 use inquire::{InquireError, Select, Text};
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use std::fs;
+use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -37,4 +40,12 @@ pub fn configure_sso() -> Result<SsoConfig, InquireError> {
         start_url,
         region: sso_region,
     })
+}
+
+pub fn get_config_dir(home_dir: &Path) -> Result<PathBuf> {
+    let config_dir = home_dir.join(".awseasysso");
+    if !config_dir.exists() {
+        fs::create_dir_all(&config_dir)?;
+    }
+    Ok(config_dir)
 }
