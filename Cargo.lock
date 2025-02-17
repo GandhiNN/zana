@@ -3156,6 +3156,7 @@ dependencies = [
  "aws-sdk-redshift",
  "aws-sdk-resourceexplorer2",
  "aws-sdk-s3",
+ "aws-sdk-sso",
  "aws-sdk-ssooidc",
  "aws-types",
  "chrono",
