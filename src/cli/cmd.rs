@@ -205,4 +205,15 @@ pub fn cmd() -> Command {
                     ),
                 )
         )
+        .subcommand(
+            Command::new("sso")
+                .about("AWS SSO API")
+                .subcommand(
+                    Command::new("oidc")
+                        .about("AWS SSO OIDC operations").subcommand(
+                            Command::new("configure")
+                                .about("Configure AWS SSO OIDC")
+                        )
+                ),
+        )
 }

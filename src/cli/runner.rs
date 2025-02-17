@@ -8,6 +8,7 @@ use crate::aws::glue::Glue;
 use crate::aws::rds::RDS;
 use crate::aws::redshift::Redshift;
 use crate::aws::resource_explorer::ResourceExplorer;
+use crate::aws::sso_oidc::configure_sso;
 use crate::aws::{config, s3};
 use crate::cli::cmd;
 use crate::util::{pretty_print, write_csv};
@@ -332,6 +333,21 @@ pub async fn run(conf: AWSConfigFile) {
                             let model = flags.get_one::<String>("model").unwrap();
                             let prompt = flags.get_one::<String>("prompt").unwrap();
                             let _res = bedrock_runtime.invoke_prompt(model, prompt).await;
+                        }
+                        _ => error!("Unknown input"),
+                    }
+                }
+                _ => error!("Unknown input"),
+            }
+        }
+        Some(("sso", sub_matches)) => {
+            let sso_subcommands = sub_matches.subcommand().unwrap();
+            match sso_subcommands {
+                ("oidc", sub_matches) => {
+                    let subcommands = sub_matches.subcommand().unwrap();
+                    match subcommands {
+                        ("configure", _) => {
+                            let _res = configure_sso();
                         }
                         _ => error!("Unknown input"),
                     }
