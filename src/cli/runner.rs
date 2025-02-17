@@ -313,8 +313,9 @@ pub async fn run(conf: AWSConfigFile) {
                     let mgmt_subcommands = sub_matches.subcommand().unwrap();
                     match mgmt_subcommands {
                         ("list-foundational-models", flags) => {
+                            let provider = flags.get_one::<String>("provider").unwrap();
                             let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
-                            let res = bedrock.list_foundational_models().await;
+                            let res = bedrock.list_foundational_models(provider).await;
                             if *pretty {
                                 pretty_print(res.unwrap());
                             } else {

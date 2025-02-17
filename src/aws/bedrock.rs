@@ -28,8 +28,16 @@ impl Bedrock {
         Self { client }
     }
 
-    pub async fn list_foundational_models(&self) -> Result<Vec<FoundationalModelsSummary>, Error> {
-        let fm = self.client.list_foundation_models().send().await;
+    pub async fn list_foundational_models(
+        &self,
+        provider_name: &str,
+    ) -> Result<Vec<FoundationalModelsSummary>, Error> {
+        let fm = self
+            .client
+            .list_foundation_models()
+            .by_provider(provider_name)
+            .send()
+            .await;
         let mut fm_summaries: Vec<FoundationalModelsSummary> = Vec::new();
         if let fms = fm.unwrap().model_summaries() {
             for fm in fms {

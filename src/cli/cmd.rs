@@ -191,6 +191,7 @@ pub fn cmd() -> Command {
                     Command::new("mgmt").about("Bedrock management API").subcommand(
                         Command::new("list-foundational-models")
                             .about("List foundational models")
+                            .arg(arg!(-r --provider <VALUE> "Provider name").required(true).default_value("amazon"))
                             .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
                             .arg_required_else_help(true),
                     )
