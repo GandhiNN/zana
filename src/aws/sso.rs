@@ -1,6 +1,7 @@
 use crate::aws::region;
 use inquire::{InquireError, Select, Text};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -15,6 +16,16 @@ impl SsoConfig {
             start_url: String::from(start_url),
             region: String::from(sso_region),
         }
+    }
+}
+
+impl fmt::Display for SsoConfig {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "SSO Start URL: {}\nSSO Region: {}",
+            self.start_url, self.region
+        )
     }
 }
 

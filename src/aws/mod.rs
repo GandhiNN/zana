@@ -10,4 +10,4 @@ pub mod redshift;
 pub mod region;
 pub mod resource_explorer;
 pub mod s3;
-pub mod sso_oidc;
+pub mod sso;
