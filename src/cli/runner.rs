@@ -348,8 +348,7 @@ pub async fn run(conf: AWSConfigFile) {
                     let subcommands = sub_matches.subcommand().unwrap();
                     match subcommands {
                         ("configure", _) => {
-                            let res = sso.configure_sso(shared_config).await;
-                            println!("{}", res.unwrap());
+                            let _res = sso.configure_sso(shared_config).await;
                         }
                         _ => error!("Unknown input"),
                     }

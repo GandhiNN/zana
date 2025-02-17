@@ -1,10 +1,11 @@
+use crate::aws::config::AwsCliConfig;
 use crate::aws::region;
 use crate::aws::sso_token::AccessToken;
 use anyhow::Result;
 use aws_config::SdkConfig;
 use aws_sdk_sso::Client;
 use directories::UserDirs;
-use inquire::{InquireError, Select, Text};
+use inquire::{Select, Text};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fs;
@@ -105,6 +106,7 @@ impl AccountInfoProvider {
     }
 }
 
+#[allow(dead_code)]
 pub struct Sso {
     client: Client,
 }
@@ -114,12 +116,13 @@ impl Sso {
         let client = Client::new(&config);
         Self { client }
     }
-    pub async fn configure_sso(&self, config: SdkConfig) -> Result<SsoConfig> {
+    pub async fn configure_sso(&self, config: SdkConfig) -> Result<()> {
         let start_url = Text::new("SSO start-url:").prompt()?;
         let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
         let sso_region = Select::new("SSO region:", regions).prompt()?;
         let home_dir = get_home_dir();
         let aws_config_dir = get_config_dir(&home_dir).unwrap();
+        let aws_config_file = aws_config_dir.join("config");
         let session_name = session_name(start_url.as_str());
         let token_provider =
             SsoAccessTokenProvider::new(&config, session_name.as_str(), &aws_config_dir)?;
@@ -145,12 +148,18 @@ impl Sso {
         let selected_role = Select::new("Select role:", roles).prompt()?;
 
         // Create AWS profile
-        // TBC
+        let aws_config_service = AwsCliConfig::new(&aws_config_file);
+        let profile_name = aws_config_service.create_or_update_profile(
+            &selected_account.account_id,
+            &selected_account.account_name,
+            &selected_role,
+            &start_url,
+            &session_name,
+            sso_region.as_str(),
+        )?;
+        println!("{}", profile_name);
 
-        Ok(SsoConfig {
-            start_url,
-            region: sso_region,
-        })
+        Ok(())
     }
 }
 
