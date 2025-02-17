@@ -11,7 +11,7 @@ where
     T: ?Sized + Serialize,
 {
     let serialized = serde_json::to_string(d)?;
-    let mut file = File::create(&file_path)?;
+    let mut file = File::create(file_path)?;
     file.write_all(serialized.as_bytes())?;
     Ok(())
 }
