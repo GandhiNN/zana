@@ -36,6 +36,7 @@ clap = { version = "4.4.2", features = ["derive", "cargo"] }
 configparser = "3.1.0"
 aws-sdk-bedrock = "1.73.0"
 inquire = "0.7.5"
+sha1 = "0.10.6"
 
 [profile.release]
 strip = true        # Strip symbols from binary*

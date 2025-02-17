@@ -11,3 +11,4 @@ pub mod region;
 pub mod resource_explorer;
 pub mod s3;
 pub mod sso;
+pub mod sso_token;

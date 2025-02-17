@@ -1,4 +1,4 @@
-use crate::util::convert_naive_datetime_to_utc;
+use crate::utils::common::convert_naive_datetime_to_utc;
 use anyhow::Result;
 use aws_sdk_s3::{Client, Error};
 use aws_types::SdkConfig;

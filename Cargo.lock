@@ -3301,6 +3301,7 @@ dependencies = [
  "inquire",
  "serde",
  "serde_json",
+ "sha1",
  "tabled",
  "time",
  "tokio",

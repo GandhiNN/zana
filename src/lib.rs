@@ -1,4 +1,4 @@
 pub mod aws;
 pub mod browser;
 pub mod cli;
-pub mod util;
+pub mod utils;

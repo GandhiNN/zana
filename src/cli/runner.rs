@@ -11,7 +11,7 @@ use crate::aws::resource_explorer::ResourceExplorer;
 use crate::aws::sso::configure_sso;
 use crate::aws::{config, s3};
 use crate::cli::cmd;
-use crate::util::{pretty_print, write_csv};
+use crate::utils::common::{pretty_print, write_csv};
 use tracing::{error, info};
 
 pub async fn run(conf: AWSConfigFile) {
