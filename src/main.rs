@@ -1,7 +1,7 @@
 use directories::BaseDirs;
 use tracing::info;
 use tracing_subscriber::fmt as TracingSubscriberFmt;
-use zana::aws::config::AWSCredentialsFile;
+use zana::aws::credentials::AWSCredentialsFile;
 use zana::cli;
 
 #[tokio::main]

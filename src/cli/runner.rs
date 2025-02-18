@@ -1,7 +1,8 @@
 use crate::aws::bedrock::Bedrock;
 use crate::aws::bedrock_runtime::BedrockRuntime;
-use crate::aws::config::{AWSCredentials, AWSCredentialsFile};
+// use crate::aws::config::{AWSCredentials, AWSCredentialsFile};
 use crate::aws::cost_explorer::CostExplorer;
+use crate::aws::credentials::{AWSCredentials, AWSCredentialsFile};
 use crate::aws::docdb::DocDB;
 use crate::aws::dynamodb::DynamoDB;
 use crate::aws::glue::Glue;
