@@ -154,19 +154,12 @@ impl SsoAccessTokenProvider {
         // Prompt user to open browser
         open::that(auth_response.verification_uri_complete().unwrap())?;
 
-        // Implement timeout for browser inactivity termination
+        // TODO: Implement timeout for browser inactivity termination
         // i.e. if user is not responding to browser prompt, terminate after n seconds
-        let _ = tokio::time::timeout(StdDuration::from_secs(10), async {
-            println!(
-                "\nVerify authorization code: \x1B[36;1m{}\x1B[0m",
-                &auth_response.user_code().unwrap()
-            )
-        })
-        .await;
-        // println!(
-        //     "\nVerify authorization code: \x1B[36;1m{}\x1B[0m",
-        //     &auth_response.user_code().unwrap()
-        // );
+        println!(
+            "\nVerify authorization code: \x1B[36;1m{}\x1B[0m",
+            &auth_response.user_code().unwrap()
+        );
         let interval = auth_response.interval();
         loop {
             let token_response = self

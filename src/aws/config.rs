@@ -5,23 +5,52 @@ use aws_config::timeout::TimeoutConfig;
 use aws_types::region::Region;
 use configparser::ini::Ini;
 use std::env::set_var;
+use std::fmt;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::string::String;
 use std::time;
 
-pub fn get_config_file_age(fpath: &str) -> time::Duration {
-    let metadata = std::fs::metadata(fpath).unwrap();
-    metadata.modified().unwrap().elapsed().unwrap()
+#[derive(Default)]
+pub struct FileAge {
+    pub age_duration: time::Duration,
+    pub seconds: u64,
+    pub hours: u64,
+    pub minutes: u64,
 }
 
+impl fmt::Display for FileAge {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}h {}m {}s", self.hours, self.minutes, self.seconds)
+    }
+}
+
+#[derive(Default)]
 pub struct AWSCredentialsFile {
     file_path: String,
+    pub age: FileAge,
 }
 
 impl AWSCredentialsFile {
     pub fn new(path: String) -> Self {
-        Self { file_path: path }
+        Self {
+            file_path: path,
+            age: FileAge::default(),
+        }
+    }
+    pub fn get_credentials_file_age(&mut self) {
+        let metadata = std::fs::metadata(&self.file_path).unwrap();
+        let t = metadata.modified().unwrap().elapsed().unwrap();
+        let age = t.as_secs();
+        let hours = age / 3600;
+        let minutes = age % 3600 / 60;
+        let seconds = age % 3600 % 60;
+        self.age = FileAge {
+            age_duration: t,
+            seconds,
+            hours,
+            minutes,
+        };
     }
 }
 
