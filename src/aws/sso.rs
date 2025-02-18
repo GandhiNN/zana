@@ -4,6 +4,7 @@ use crate::aws::sso_token::AccessToken;
 use crate::utils::common::get_home_dir;
 use anyhow::Result;
 use aws_config::SdkConfig;
+use aws_sdk_sso::operation::get_role_credentials::GetRoleCredentialsOutput;
 use aws_sdk_sso::Client;
 use inquire::{Select, Text};
 use serde::{Deserialize, Serialize};
@@ -108,6 +109,23 @@ impl AccountInfoProvider {
             .map(String::from)
             .collect::<Vec<_>>())
     }
+
+    pub async fn get_role_credentials(
+        &self,
+        role: &str,
+        account_info: &AccountInfo,
+        access_token: &AccessToken,
+    ) -> Result<GetRoleCredentialsOutput> {
+        let res = self
+            .client
+            .get_role_credentials()
+            .role_name(role)
+            .account_id(account_info.account_id.as_str())
+            .access_token(access_token.access_token.as_str())
+            .send()
+            .await?;
+        Ok(res)
+    }
 }
 
 #[allow(dead_code)]
@@ -167,6 +185,12 @@ impl Sso {
             .await?;
         roles.sort();
         let selected_role = Select::new("Select role:", roles).prompt()?;
+
+        // TODO: Get the selected role credentials
+        let role_credentials = account_info_provider
+            .get_role_credentials(&selected_role, &selected_account, &access_token)
+            .await?;
+        println!("{:?}", role_credentials);
 
         // Create AWS profile
         let aws_config_service = AwsCliConfig::new(&aws_config_file);
