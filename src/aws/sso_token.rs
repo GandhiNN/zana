@@ -160,6 +160,10 @@ impl SsoAccessTokenProvider {
             "\nVerify authorization code: \x1B[36;1m{}\x1B[0m",
             &auth_response.user_code().unwrap()
         );
+        println!(
+            "\nIf browser does not opened automatically, please go to: {}",
+            &auth_response.verification_uri_complete().unwrap()
+        );
         let interval = auth_response.interval();
         loop {
             let token_response = self
