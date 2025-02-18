@@ -1,6 +1,6 @@
 use crate::aws::bedrock::Bedrock;
 use crate::aws::bedrock_runtime::BedrockRuntime;
-use crate::aws::config::{AWSConfigFile, AWSCredentialsConfig};
+use crate::aws::config::{AWSCredentials, AWSCredentialsFile};
 use crate::aws::cost_explorer::CostExplorer;
 use crate::aws::docdb::DocDB;
 use crate::aws::dynamodb::DynamoDB;
@@ -14,7 +14,7 @@ use crate::cli::cmd;
 use crate::utils::common::{pretty_print, write_csv};
 use tracing::{error, info};
 
-pub async fn run(conf: AWSConfigFile) {
+pub async fn run(conf: AWSCredentialsFile) {
     // Read from CLI arguments
     let matches = cmd::cmd().get_matches();
 
@@ -27,7 +27,7 @@ pub async fn run(conf: AWSConfigFile) {
 
     // Load AWS Credentials Configuration
     info!("Using shared config with profile name: {}", profile);
-    let aws_credentials_config = AWSCredentialsConfig::new(conf, profile);
+    let aws_credentials_config = AWSCredentials::new(conf, profile);
     let shared_config: aws_types::SdkConfig =
         config::set_config(aws_credentials_config, *timeout).await;
 

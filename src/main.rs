@@ -1,7 +1,7 @@
 use directories::BaseDirs;
 use tracing::info;
 use tracing_subscriber::fmt as TracingSubscriberFmt;
-use zana::aws::config::{get_config_file_age, AWSConfigFile};
+use zana::aws::config::{get_config_file_age, AWSCredentialsFile};
 use zana::cli;
 
 #[tokio::main]
@@ -44,7 +44,7 @@ async fn main() {
     }
 
     // Load config file
-    let aws_config = AWSConfigFile::new(config_path);
+    let aws_config = AWSCredentialsFile::new(config_path);
 
     // Handle CLI arguments
     cli::runner::run(aws_config).await;

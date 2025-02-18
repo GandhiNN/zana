@@ -15,15 +15,13 @@ pub fn get_config_file_age(fpath: &str) -> time::Duration {
     metadata.modified().unwrap().elapsed().unwrap()
 }
 
-pub struct AWSConfigFile {
-    config_file_path: String,
+pub struct AWSCredentialsFile {
+    file_path: String,
 }
 
-impl AWSConfigFile {
-    pub fn new(config_path: String) -> Self {
-        Self {
-            config_file_path: config_path,
-        }
+impl AWSCredentialsFile {
+    pub fn new(path: String) -> Self {
+        Self { file_path: path }
     }
 }
 
@@ -36,9 +34,9 @@ pub struct AWSCredentials {
 }
 
 impl AWSCredentials {
-    pub fn new(config: AWSConfigFile, profile: &str) -> Self {
+    pub fn new(file: AWSCredentialsFile, profile: &str) -> Self {
         let mut config_reader = Ini::new();
-        let config_map = config_reader.load(config.config_file_path).unwrap();
+        let config_map = config_reader.load(file.file_path).unwrap();
         let region = config_map
             .get(profile)
             .unwrap()
