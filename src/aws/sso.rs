@@ -13,6 +13,10 @@ use std::path::{Path, PathBuf};
 
 use super::sso_token::SsoAccessTokenProvider;
 
+// Constants
+const PARENT_CONFIG_PATH: &str = ".aws_sso";
+const CONFIG_PATH: &str = "config";
+
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct SsoConfig {
@@ -118,7 +122,7 @@ impl Sso {
     }
 
     fn get_config_dir(&self, home_dir: &Path) -> Result<PathBuf> {
-        let config_dir = home_dir.join(".aws_sso");
+        let config_dir = home_dir.join(PARENT_CONFIG_PATH);
         if !config_dir.exists() {
             fs::create_dir_all(&config_dir)?;
         }
@@ -134,7 +138,7 @@ impl Sso {
     pub async fn configure_sso(&self, config: SdkConfig) -> Result<()> {
         let home_dir = get_home_dir();
         let aws_config_dir = self.get_config_dir(&home_dir).unwrap();
-        let aws_config_file = aws_config_dir.join("config");
+        let aws_config_file = aws_config_dir.join(CONFIG_PATH);
 
         let start_url = Text::new("SSO start-url:").prompt()?;
         let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
