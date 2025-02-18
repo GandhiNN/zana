@@ -1,10 +1,10 @@
 use crate::aws::config::AwsCliConfig;
 use crate::aws::region;
 use crate::aws::sso_token::AccessToken;
+use crate::utils::common::get_home_dir;
 use anyhow::Result;
 use aws_config::SdkConfig;
 use aws_sdk_sso::Client;
-use directories::UserDirs;
 use inquire::{Select, Text};
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -116,9 +116,24 @@ impl Sso {
         let client = Client::new(&config);
         Self { client }
     }
+
+    fn get_config_dir(&self, home_dir: &Path) -> Result<PathBuf> {
+        let config_dir = home_dir.join(".aws_sso");
+        if !config_dir.exists() {
+            fs::create_dir_all(&config_dir)?;
+        }
+        Ok(config_dir)
+    }
+
+    fn session_name(&self, start_url: &str) -> String {
+        let start_url_without_schema = start_url.replace("https://", "");
+        let (subdomain, _) = start_url_without_schema.split_once(".").unwrap();
+        format!("sso-{}", &subdomain)
+    }
+
     pub async fn configure_sso(&self, config: SdkConfig) -> Result<()> {
         let home_dir = get_home_dir();
-        let aws_config_dir = get_config_dir(&home_dir).unwrap();
+        let aws_config_dir = self.get_config_dir(&home_dir).unwrap();
         let aws_config_file = aws_config_dir.join("config");
 
         let start_url = Text::new("SSO start-url:").prompt()?;
@@ -127,7 +142,7 @@ impl Sso {
 
         // Session token retrieval phase
         println!("Retrieving Access Token...");
-        let session_name = session_name(start_url.as_str());
+        let session_name = self.session_name(start_url.as_str());
         let token_provider =
             SsoAccessTokenProvider::new(&config, session_name.as_str(), &aws_config_dir)?;
         let account_info_provider = AccountInfoProvider::new(&config);
@@ -159,29 +174,12 @@ impl Sso {
             &session_name,
             sso_region.as_str(),
         )?;
-        println!("{}", profile_name);
+        println!(
+            "Writing AWS profile {} to {}",
+            profile_name,
+            aws_config_file.display()
+        );
 
         Ok(())
     }
-}
-
-pub fn session_name(start_url: &str) -> String {
-    let start_url_without_schema = start_url.replace("https://", "");
-    let (subdomain, _) = start_url_without_schema.split_once(".").unwrap();
-
-    format!("sso-{}", &subdomain)
-}
-
-fn get_home_dir() -> PathBuf {
-    let user_dirs = UserDirs::new().expect("Could not resolve user HOME.");
-    let home_dir = user_dirs.home_dir();
-    home_dir.to_path_buf()
-}
-
-pub fn get_config_dir(home_dir: &Path) -> Result<PathBuf> {
-    let config_dir = home_dir.join(".aws_sso");
-    if !config_dir.exists() {
-        fs::create_dir_all(&config_dir)?;
-    }
-    Ok(config_dir)
 }

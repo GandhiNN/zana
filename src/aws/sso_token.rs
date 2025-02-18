@@ -151,7 +151,7 @@ impl SsoAccessTokenProvider {
             .await?;
         open::that(auth_response.verification_uri_complete().unwrap())?;
         println!(
-            "\nVerify authorization code: \x1B[36;1m{}\x18[0m",
+            "\nVerify authorization code: \x1B[36;1m{}\x1B[0m",
             &auth_response.user_code().unwrap()
         );
         let interval = auth_response.interval();
