@@ -8,8 +8,8 @@ use crate::aws::glue::Glue;
 use crate::aws::rds::RDS;
 use crate::aws::redshift::Redshift;
 use crate::aws::resource_explorer::ResourceExplorer;
+use crate::aws::s3;
 use crate::aws::sso::Sso;
-use crate::aws::{config, s3};
 use crate::cli::cmd;
 use crate::utils::common::{pretty_print, write_csv};
 use tracing::{error, info};
@@ -27,9 +27,8 @@ pub async fn run(conf: AWSCredentialsFile) {
 
     // Load AWS Credentials Configuration
     info!("Using shared config with profile name: {}", profile);
-    let aws_credentials_config = AWSCredentials::new(conf, profile);
-    let shared_config: aws_types::SdkConfig =
-        config::set_config(aws_credentials_config, *timeout).await;
+    let aws_credentials = AWSCredentials::new(conf, profile);
+    let shared_config: aws_types::SdkConfig = aws_credentials.set_config(*timeout).await;
 
     // Match commands and subcommands input
     match matches.subcommand() {
