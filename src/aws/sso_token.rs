@@ -8,6 +8,10 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::{fs, io::Write};
 
+// Define constants
+const CLIENT_NAME: &str = "zana-rs";
+const DEVICE_GRANT_TYPE: &str = "urn:ietf:params:oauth:grant-type:device_code";
+const REFRESH_GRANT_TYPE: &str = "refresh_token";
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AccessToken {
@@ -78,10 +82,6 @@ pub struct SsoAccessTokenProvider {
 }
 
 impl SsoAccessTokenProvider {
-    const CLIENT_NAME: &str = "zana-rs";
-    const DEVICE_GRANT_TYPE: &str = "urn:ietf:params:oauth:grant-type:device_code";
-    const REFRESH_GRANT_TYPE: &str = "refresh_token";
-
     pub fn new(config: &SdkConfig, sso_session_name: &str, config_dir: &Path) -> Result<Self> {
         let sso_cache_dir = config_dir.join("sso").join("cache");
         if !sso_cache_dir.exists() {
@@ -118,7 +118,7 @@ impl SsoAccessTokenProvider {
         let response = self
             .client
             .register_client()
-            .client_name(format!("{}-{}", Self::CLIENT_NAME, self.sso_session_name))
+            .client_name(format!("{}-{}", CLIENT_NAME, self.sso_session_name))
             .client_type("public")
             .scopes("sso:account:access")
             .send()
@@ -161,7 +161,7 @@ impl SsoAccessTokenProvider {
                 .create_token()
                 .client_id(device_client.client_id.as_str())
                 .client_secret(device_client.client_secret.as_str())
-                .grant_type(Self::DEVICE_GRANT_TYPE)
+                .grant_type(DEVICE_GRANT_TYPE)
                 .device_code(auth_response.device_code().unwrap())
                 .send()
                 .await;
@@ -206,7 +206,7 @@ impl SsoAccessTokenProvider {
             .create_token()
             .client_id(device_client.client_id.as_str())
             .client_secret(device_client.client_secret.as_str())
-            .grant_type(Self::REFRESH_GRANT_TYPE)
+            .grant_type(REFRESH_GRANT_TYPE)
             .refresh_token(cached_token.refresh_token.as_str())
             .send()
             .await?;
