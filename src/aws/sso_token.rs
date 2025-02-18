@@ -12,6 +12,7 @@ use std::{fs, io::Write};
 const CLIENT_NAME: &str = "zana-rs";
 const DEVICE_GRANT_TYPE: &str = "urn:ietf:params:oauth:grant-type:device_code";
 const REFRESH_GRANT_TYPE: &str = "refresh_token";
+
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AccessToken {
