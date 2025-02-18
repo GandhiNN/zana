@@ -187,10 +187,14 @@ impl Sso {
         let selected_role = Select::new("Select role:", roles).prompt()?;
 
         // TODO: Get the selected role credentials
+        // TODO: Parse the role credentials' attribute to its own struct
         let role_credentials = account_info_provider
             .get_role_credentials(&selected_role, &selected_account, &access_token)
             .await?;
-        println!("{:?}", role_credentials);
+        let access_key_id = role_credentials.role_credentials.unwrap().access_key_id;
+        // let secret_access_key = role_credentials.role_credentials.unwrap().secret_access_key;
+        // println!("{:?}", role_credentials.role_credentials.unwrap());
+        println!("{}", access_key_id.unwrap());
 
         // Create AWS profile
         let aws_config_service = AwsCliConfig::new(&aws_config_file);
