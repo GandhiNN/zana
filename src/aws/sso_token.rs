@@ -6,6 +6,7 @@ use aws_sdk_ssooidc::Client;
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
+use std::time::Duration as StdDuration;
 use std::{fs, io::Write};
 
 // Define constants
@@ -149,11 +150,23 @@ impl SsoAccessTokenProvider {
             .start_url(start_url)
             .send()
             .await?;
+
+        // Prompt user to open browser
         open::that(auth_response.verification_uri_complete().unwrap())?;
-        println!(
-            "\nVerify authorization code: \x1B[36;1m{}\x1B[0m",
-            &auth_response.user_code().unwrap()
-        );
+
+        // Implement timeout for browser inactivity termination
+        // i.e. if user is not responding to browser prompt, terminate after n seconds
+        let _ = tokio::time::timeout(StdDuration::from_secs(10), async {
+            println!(
+                "\nVerify authorization code: \x1B[36;1m{}\x1B[0m",
+                &auth_response.user_code().unwrap()
+            )
+        })
+        .await;
+        // println!(
+        //     "\nVerify authorization code: \x1B[36;1m{}\x1B[0m",
+        //     &auth_response.user_code().unwrap()
+        // );
         let interval = auth_response.interval();
         loop {
             let token_response = self

@@ -27,7 +27,7 @@ impl AWSConfigFile {
     }
 }
 
-pub struct AWSCredentialsConfig {
+pub struct AWSCredentials {
     profile: String,
     region: String,
     access_key_id: String,
@@ -35,7 +35,7 @@ pub struct AWSCredentialsConfig {
     session_token: String,
 }
 
-impl AWSCredentialsConfig {
+impl AWSCredentials {
     pub fn new(config: AWSConfigFile, profile: &str) -> Self {
         let mut config_reader = Ini::new();
         let config_map = config_reader.load(config.config_file_path).unwrap();
@@ -77,18 +77,15 @@ impl AWSCredentialsConfig {
     }
 }
 
-pub async fn set_config(
-    credentials_config: AWSCredentialsConfig,
-    timeout: u64,
-) -> aws_types::SdkConfig {
+pub async fn set_config(credentials: AWSCredentials, timeout: u64) -> aws_types::SdkConfig {
     // Load AWS credentials chain
     let region = DefaultRegionChain::builder()
-        .profile_name(credentials_config.profile.as_str())
+        .profile_name(credentials.profile.as_str())
         .build()
         .region()
         .await;
-    let credentials = DefaultCredentialsChain::builder()
-        .profile_name(credentials_config.profile.as_str())
+    let credentials_chain = DefaultCredentialsChain::builder()
+        .profile_name(credentials.profile.as_str())
         .region(region.clone())
         .build()
         .await;
@@ -101,25 +98,19 @@ pub async fn set_config(
         .build();
 
     // Configure AWS credentials as process-scoped env var
-    set_var("AWS_REGION", credentials_config.region.as_str());
-    set_var(
-        "AWS_ACCESS_KEY_ID",
-        credentials_config.access_key_id.as_str(),
-    );
+    set_var("AWS_REGION", credentials.region.as_str());
+    set_var("AWS_ACCESS_KEY_ID", credentials.access_key_id.as_str());
     set_var(
         "AWS_SECRET_ACCESS_KEY",
-        credentials_config.secret_access_key.as_str(),
+        credentials.secret_access_key.as_str(),
     );
-    set_var(
-        "AWS_SESSION_TOKEN",
-        credentials_config.session_token.as_str(),
-    );
+    set_var("AWS_SESSION_TOKEN", credentials.session_token.as_str());
 
     // set AWS config
     aws_config::from_env()
-        .credentials_provider(credentials)
-        .profile_name(credentials_config.profile)
-        .region(Region::new(credentials_config.region))
+        .credentials_provider(credentials_chain)
+        .profile_name(credentials.profile)
+        .region(Region::new(credentials.region))
         .timeout_config(timeout_config)
         .load()
         .await
