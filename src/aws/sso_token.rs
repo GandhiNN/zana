@@ -6,7 +6,6 @@ use aws_sdk_ssooidc::Client;
 use chrono::{DateTime, Duration, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use std::time::Duration as StdDuration;
 use std::{fs, io::Write};
 
 // Define constants
