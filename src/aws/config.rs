@@ -140,45 +140,6 @@ impl AWSCredentials {
     }
 }
 
-pub async fn set_config(credentials: AWSCredentials, timeout: u64) -> aws_types::SdkConfig {
-    // Load AWS credentials chain
-    let region = DefaultRegionChain::builder()
-        .profile_name(credentials.profile.as_str())
-        .build()
-        .region()
-        .await;
-    let credentials_chain = DefaultCredentialsChain::builder()
-        .profile_name(credentials.profile.as_str())
-        .region(region.clone())
-        .build()
-        .await;
-
-    // Set timeout config
-    let timeout_config = TimeoutConfig::builder()
-        .connect_timeout(time::Duration::from_secs(timeout))
-        .operation_timeout(time::Duration::from_secs(timeout * 3))
-        .operation_attempt_timeout(time::Duration::from_secs(timeout * 3 * 3))
-        .build();
-
-    // Configure AWS credentials as process-scoped env var
-    set_var("AWS_REGION", credentials.region.as_str());
-    set_var("AWS_ACCESS_KEY_ID", credentials.access_key_id.as_str());
-    set_var(
-        "AWS_SECRET_ACCESS_KEY",
-        credentials.secret_access_key.as_str(),
-    );
-    set_var("AWS_SESSION_TOKEN", credentials.session_token.as_str());
-
-    // set AWS config
-    aws_config::from_env()
-        .credentials_provider(credentials_chain)
-        .profile_name(credentials.profile)
-        .region(Region::new(credentials.region))
-        .timeout_config(timeout_config)
-        .load()
-        .await
-}
-
 pub struct AwsCliConfig {
     config_file: PathBuf,
 }
@@ -252,5 +213,34 @@ impl AwsCliConfig {
         let _ = config.write(&self.config_file);
 
         Ok(profile_name)
+    }
+}
+
+#[derive(Default)]
+pub struct AWSConfigFile {
+    file_path: String,
+    pub age: FileAge,
+}
+
+impl AWSConfigFile {
+    pub fn new(path: String) -> Self {
+        Self {
+            file_path: path,
+            age: FileAge::default(),
+        }
+    }
+    pub fn get_config_file_age(&mut self) {
+        let metadata = std::fs::metadata(&self.file_path).unwrap();
+        let t = metadata.modified().unwrap().elapsed().unwrap();
+        let age = t.as_secs();
+        let hours = age / 3600;
+        let minutes = age % 3600 / 60;
+        let seconds = age % 3600 % 60;
+        self.age = FileAge {
+            age_duration: t,
+            seconds,
+            hours,
+            minutes,
+        };
     }
 }
