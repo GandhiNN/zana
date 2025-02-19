@@ -147,13 +147,44 @@ impl Sso {
         Ok(config_dir)
     }
 
-    fn session_name(&self, start_url: &str) -> String {
+    fn get_session_name(&self, start_url: &str) -> String {
         let start_url_without_schema = start_url.replace("https://", "");
         let (subdomain, _) = start_url_without_schema.split_once(".").unwrap();
         format!("sso-{}", &subdomain)
     }
 
+    pub async fn get_role_credentials(
+        &self,
+        provider: AccountInfoProvider,
+        account: AccountInfo,
+        role: String,
+        token: AccessToken,
+    ) -> Result<GetRoleCredentialsOutput> {
+        // Get role credentials
+        let role_credentials = provider
+            .get_role_credentials(&role, &account, &token)
+            .await?;
+        println!("{:#?}", role_credentials.role_credentials());
+        Ok(role_credentials)
+    }
+
+    pub async fn get_session_token(
+        &self,
+        url: &str,
+        session: &str,
+        conf: &SdkConfig,
+        conf_dir: &Path,
+    ) -> Result<AccessToken> {
+        // Session token retrieval phase
+        println!("Retrieving Access Token...");
+        let token_provider = SsoAccessTokenProvider::new(conf, session, conf_dir)?;
+
+        // Register client device and retrieve the access token
+        token_provider.get_access_token(url).await
+    }
+
     pub async fn configure_sso(&self, config: SdkConfig) -> Result<()> {
+        // Prepare the configuration
         let home_dir = get_home_dir();
         let aws_config_dir = self.get_config_dir(&home_dir).unwrap();
         let aws_config_file = aws_config_dir.join(CONFIG_PATH);
@@ -162,15 +193,16 @@ impl Sso {
         let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
         let sso_region = Select::new("SSO region:", regions).prompt()?;
 
-        // Session token retrieval phase
-        println!("Retrieving Access Token...");
-        let session_name = self.session_name(start_url.as_str());
-        let token_provider =
-            SsoAccessTokenProvider::new(&config, session_name.as_str(), &aws_config_dir)?;
+        // Set account info provider
         let account_info_provider = AccountInfoProvider::new(&config);
 
+        // Get session name
+        let session_name = self.get_session_name(start_url.as_str());
+
         // Register client device and retrieve the access token
-        let access_token = token_provider.get_access_token(&start_url).await?;
+        let access_token = self
+            .get_session_token(&start_url, &session_name, &config, &aws_config_dir)
+            .await?;
 
         // Get the available SSO accounts from SSO start page
         let mut sso_accounts = account_info_provider
@@ -185,16 +217,6 @@ impl Sso {
             .await?;
         roles.sort();
         let selected_role = Select::new("Select role:", roles).prompt()?;
-
-        // TODO: Get the selected role credentials
-        // TODO: Parse the role credentials' attribute to its own struct
-        let role_credentials = account_info_provider
-            .get_role_credentials(&selected_role, &selected_account, &access_token)
-            .await?;
-        let access_key_id = role_credentials.role_credentials.unwrap().access_key_id;
-        // let secret_access_key = role_credentials.role_credentials.unwrap().secret_access_key;
-        // println!("{:?}", role_credentials.role_credentials.unwrap());
-        println!("{}", access_key_id.unwrap());
 
         // Create AWS profile
         let aws_config_service = AwsCliConfig::new(&aws_config_file);

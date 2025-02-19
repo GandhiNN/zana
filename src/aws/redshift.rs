@@ -55,7 +55,6 @@ impl Redshift {
         while let Some(output) = resp.next().await {
             match output {
                 Ok(res) => {
-                    // println!("{:#?}", res.clusters.unwrap());
                     let _ = res
                         .clusters
                         .unwrap()
