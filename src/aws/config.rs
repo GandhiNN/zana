@@ -78,23 +78,4 @@ impl AwsCliConfig {
 
         Ok(profile_name)
     }
-
-    // TODO: Complete the method
-    pub fn create_or_update_credentials(
-        &self,
-        account_id: &str,
-        account_name: &str,
-        role_name: &str,
-        access_key_id: &str,
-        secret_access_key: &str,
-        sso_region: &str,
-        session_name: &str,
-        token_expiration: &str,
-        token_expiration_date: &str,
-    ) -> Result<()> {
-        if !&self.config_file.try_exists()? {
-            File::create(&self.config_file)?;
-        }
-        Ok(())
-    }
 }

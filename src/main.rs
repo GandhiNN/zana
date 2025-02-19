@@ -1,7 +1,7 @@
 use directories::BaseDirs;
 use tracing::info;
 use tracing_subscriber::fmt as TracingSubscriberFmt;
-use zana::aws::credentials::AWSCredentialsFile;
+// use zana::aws::credentials::AWSCredentialsFile;
 use zana::cli;
 
 #[tokio::main]
@@ -15,8 +15,7 @@ async fn main() {
     let home_dir = base_dirs.home_dir().to_string_lossy().to_string();
     let default_credentials_path = format!("{}/.aws/credentials", home_dir);
     let credentials_path = std::env::var("CREDENTIALS_PATH").unwrap_or(default_credentials_path);
-    let aws_credentials = AWSCredentialsFile::new(credentials_path);
 
     // Handle CLI arguments
-    cli::runner::run(aws_credentials).await;
+    cli::runner::run(credentials_path.as_str()).await;
 }

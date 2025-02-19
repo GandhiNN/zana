@@ -1,8 +1,7 @@
 use crate::aws::bedrock::Bedrock;
 use crate::aws::bedrock_runtime::BedrockRuntime;
-// use crate::aws::config::{AWSCredentials, AWSCredentialsFile};
 use crate::aws::cost_explorer::CostExplorer;
-use crate::aws::credentials::{AWSCredentials, AWSCredentialsFile};
+use crate::aws::credentials::AWSCredentials;
 use crate::aws::docdb::DocDB;
 use crate::aws::dynamodb::DynamoDB;
 use crate::aws::glue::Glue;
@@ -13,9 +12,31 @@ use crate::aws::s3;
 use crate::aws::sso::Sso;
 use crate::cli::cmd;
 use crate::utils::common::{pretty_print, write_csv};
+use anyhow::Result;
+use inquire::Select;
 use tracing::{error, info};
 
-pub async fn run(conf: AWSCredentialsFile) {
+pub fn check_credentials_age(cred: &mut AWSCredentials) -> Result<()> {
+    // Check if the credentials are older than 6 hour
+    // If they are, prompt user to refresh the credentials
+    let cred_age = cred.get_credentials_file_age();
+    println!("Credentials file age: {}", cred_age);
+    if cred_age.age_duration > time::Duration::hours(6) {
+        println!("Credentials are older than 6 hours");
+        println!("The program is not guaranteed to run with an outdated credentials");
+        let is_continue =
+            Select::new("Would you like to continue? [yes/no]", vec!["yes", "no"]).prompt()?;
+        if is_continue == "n" {
+            println!("Exiting the program");
+            std::process::exit(1);
+        } else {
+            println!("Continuing the program");
+        }
+    }
+    Ok(())
+}
+
+pub async fn run(conf: &str) {
     // Read from CLI arguments
     let matches = cmd::cmd().get_matches();
 
@@ -28,7 +49,9 @@ pub async fn run(conf: AWSCredentialsFile) {
 
     // Load AWS Credentials Configuration
     info!("Using shared config with profile name: {}", profile);
-    let aws_credentials = AWSCredentials::new(conf, profile);
+    // Check for credentials age
+    let mut aws_credentials = AWSCredentials::new(conf, profile);
+    check_credentials_age(&mut aws_credentials).unwrap();
     let shared_config: aws_types::SdkConfig = aws_credentials.set_config(*timeout).await;
 
     // Match commands and subcommands input
