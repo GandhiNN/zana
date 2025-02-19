@@ -1,13 +1,16 @@
+use anyhow::Result;
 use directories::BaseDirs;
+use inquire::Select;
 use std::path::PathBuf;
 use tracing::info;
 use tracing_subscriber::fmt as TracingSubscriberFmt;
 use zana::cli;
+use zana::utils::fileutil::get_file_age;
 
 const DEFAULT_CREDENTIALS_PATH: &str = ".aws_sso/credentials";
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // Setup tracing
     TracingSubscriberFmt::init();
     info!("Running the program");
@@ -25,8 +28,24 @@ async fn main() {
             &credentials_path
         );
         std::process::exit(1);
+    } else {
+        let credentials_age = get_file_age(PathBuf::from(&credentials_path));
+        info!("Credentials file age: {}", credentials_age);
+        if credentials_age.age_duration > time::Duration::hours(6) {
+            info!("Credentials are older than 6 hours");
+            info!("The program is not guaranteed to run with an outdated credentials");
+            let is_continue =
+                Select::new("Would you like to continue? [yes/no]", vec!["yes", "no"]).prompt()?;
+            if is_continue == "no" {
+                info!("Exiting the program");
+                std::process::exit(1);
+            } else {
+                info!("Continuing the program");
+            }
+        }
     }
 
     // Handle CLI arguments
-    cli::runner::run().await;
+    cli::runner::run(PathBuf::from(credentials_path)).await;
+    Ok(())
 }
