@@ -21,12 +21,12 @@ pub struct AWSCredentials {
     access_key_id: String,
     secret_access_key: String,
     session_token: String,
-    expiration: String,
 }
 
 impl AWSCredentials {
-    pub fn new(path: &str, profile: &str) -> Self {
+    pub fn new(path: &PathBuf, profile: &str) -> Self {
         let mut config_reader = Ini::new();
+
         let config_map = config_reader.load::<PathBuf>(path.into()).unwrap();
         let region = config_map
             .get(profile)
@@ -56,13 +56,6 @@ impl AWSCredentials {
             .unwrap()
             .clone()
             .unwrap();
-        let expiration = config_map
-            .get(profile)
-            .unwrap()
-            .get("expiration")
-            .unwrap()
-            .clone()
-            .unwrap();
         Self {
             credential_file: path.into(),
             age: FileAge::default(),
@@ -71,7 +64,6 @@ impl AWSCredentials {
             access_key_id,
             secret_access_key,
             session_token,
-            expiration,
         }
     }
 
@@ -91,7 +83,7 @@ impl AWSCredentials {
     }
 
     // TODO: Complete the method
-    pub fn create_or_update_credentials(&self) -> Result<()> {
+    pub fn check_or_create_credentials_file(&self) -> Result<()> {
         if !&self.credential_file.try_exists()? {
             File::create(&self.credential_file)?;
         }
