@@ -14,6 +14,7 @@ use crate::cli::cmd;
 use crate::utils::common::{pretty_print, write_csv};
 use anyhow::Result;
 use inquire::Select;
+use std::path::PathBuf;
 use tracing::{error, info};
 
 pub fn check_credentials_age(cred: &mut AWSCredentials) -> Result<()> {
@@ -36,7 +37,7 @@ pub fn check_credentials_age(cred: &mut AWSCredentials) -> Result<()> {
     Ok(())
 }
 
-pub async fn run(conf: &str) {
+pub async fn run(conf: &PathBuf) {
     // Read from CLI arguments
     let matches = cmd::cmd().get_matches();
 
