@@ -13,31 +13,41 @@ use crate::aws::sso::Sso;
 use crate::cli::cmd;
 use crate::utils::common::{pretty_print, write_csv};
 use anyhow::Result;
+use directories::BaseDirs;
 use inquire::Select;
 use std::path::PathBuf;
 use tracing::{error, info};
+
+const DEFAULT_CREDENTIALS_PATH: &str = ".aws/credentials";
 
 pub fn check_credentials_age(cred: &mut AWSCredentials) -> Result<()> {
     // Check if the credentials are older than 6 hour
     // If they are, prompt user to refresh the credentials
     let cred_age = cred.get_credentials_file_age();
-    println!("Credentials file age: {}", cred_age);
+    info!("Credentials file age: {}", cred_age);
     if cred_age.age_duration > time::Duration::hours(6) {
-        println!("Credentials are older than 6 hours");
-        println!("The program is not guaranteed to run with an outdated credentials");
+        info!("Credentials are older than 6 hours");
+        info!("The program is not guaranteed to run with an outdated credentials");
         let is_continue =
             Select::new("Would you like to continue? [yes/no]", vec!["yes", "no"]).prompt()?;
-        if is_continue == "n" {
-            println!("Exiting the program");
+        if is_continue == "no" {
+            info!("Exiting the program");
             std::process::exit(1);
         } else {
-            println!("Continuing the program");
+            info!("Continuing the program");
         }
     }
     Ok(())
 }
 
-pub async fn run(conf: &PathBuf) {
+pub async fn run() {
+    // Load credentials file
+    let base_dirs = BaseDirs::new().unwrap();
+    let home_dir = base_dirs.home_dir().to_string_lossy().to_string();
+    let default_credentials_path = format!("{}/{}", home_dir, DEFAULT_CREDENTIALS_PATH);
+    let credentials_path =
+        PathBuf::from(std::env::var("CREDENTIALS_PATH").unwrap_or(default_credentials_path));
+
     // Read from CLI arguments
     let matches = cmd::cmd().get_matches();
 
@@ -51,7 +61,7 @@ pub async fn run(conf: &PathBuf) {
     // Load AWS Credentials Configuration
     info!("Using shared config with profile name: {}", profile);
     // Check for credentials age
-    let mut aws_credentials = AWSCredentials::new(conf, profile);
+    let mut aws_credentials = AWSCredentials::new(&credentials_path, profile);
     check_credentials_age(&mut aws_credentials).unwrap();
     let shared_config: aws_types::SdkConfig = aws_credentials.set_config(*timeout).await;
 
