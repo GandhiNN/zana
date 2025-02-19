@@ -5,7 +5,16 @@ It simplifies programmatic interation with AWS within your local environment.
 
 Think of it as a `kubectl`-like CLI for daily operational use cases with your AWS environment.
 
-## Cost-Explorer API
+## AWS Glue
+TBC
+
+## AWS S3
+TBC
+
+## AWS Redshift
+TBC
+
+## AWS Cost-Explorer 
 The following description explains cost types that we can use as input for the `cost-explorer` API:  
 
 1. UnblendedCost  
