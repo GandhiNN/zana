@@ -2,7 +2,6 @@ use crate::aws::bedrock::Bedrock;
 use crate::aws::bedrock_runtime::BedrockRuntime;
 use crate::aws::cost_explorer::CostExplorer;
 use crate::aws::credentials::AWSCredentials;
-// use crate::aws::credentials_v2::AwsCredentialsConfig;
 use crate::aws::docdb::DocDB;
 use crate::aws::dynamodb::DynamoDB;
 use crate::aws::glue::Glue;
@@ -13,42 +12,11 @@ use crate::aws::s3;
 use crate::aws::sso::Sso;
 use crate::cli::cmd;
 use crate::utils::common::{pretty_print, write_csv};
-use anyhow::Result;
-use directories::BaseDirs;
-use inquire::Select;
-// use std::path::PathBuf;
+
+use std::path::PathBuf;
 use tracing::{error, info};
 
-const DEFAULT_CREDENTIALS_PATH: &str = ".aws/credentials";
-
-pub fn check_credentials_age(cred: &mut AWSCredentials) -> Result<()> {
-    // Check if the credentials are older than 6 hour
-    // If they are, prompt user to refresh the credentials
-    let cred_age = cred.get_credentials_file_age();
-    info!("Credentials file age: {}", cred_age);
-    if cred_age.age_duration > time::Duration::hours(6) {
-        info!("Credentials are older than 6 hours");
-        info!("The program is not guaranteed to run with an outdated credentials");
-        let is_continue =
-            Select::new("Would you like to continue? [yes/no]", vec!["yes", "no"]).prompt()?;
-        if is_continue == "no" {
-            info!("Exiting the program");
-            std::process::exit(1);
-        } else {
-            info!("Continuing the program");
-        }
-    }
-    Ok(())
-}
-
-pub async fn run() {
-    // Load credentials file
-    let base_dirs = BaseDirs::new().unwrap();
-    let home_dir = base_dirs.home_dir().to_string_lossy().to_string();
-    let default_credentials_path = format!("{}/{}", home_dir, DEFAULT_CREDENTIALS_PATH);
-    // let credentials_path =
-    //     PathBuf::from(std::env::var("CREDENTIALS_PATH").unwrap_or(default_credentials_path));
-    let credentials_path = std::env::var("CREDENTIALS_PATH").unwrap_or(default_credentials_path);
+pub async fn run(credentials_path: PathBuf) {
     // Read from CLI arguments
     let matches = cmd::cmd().get_matches();
 
@@ -65,9 +33,7 @@ pub async fn run() {
 
     // Load AWS Credentials Configuration
     info!("Using shared config with profile name: {}", profile);
-    // Check for credentials age
-    let mut aws_credentials = AWSCredentials::new(&credentials_path.into(), profile);
-    check_credentials_age(&mut aws_credentials).unwrap();
+    let aws_credentials = AWSCredentials::new(&credentials_path, profile);
     let shared_config: aws_types::SdkConfig = aws_credentials.set_config(*timeout).await;
 
     // Match commands and subcommands input
