@@ -11,6 +11,7 @@ use std::path::PathBuf;
 use std::string::String;
 use std::time;
 
+#[allow(dead_code)]
 #[derive(Default)]
 pub struct AWSCredentials {
     pub credential_file: PathBuf,
@@ -20,6 +21,7 @@ pub struct AWSCredentials {
     access_key_id: String,
     secret_access_key: String,
     session_token: String,
+    expiration: String,
 }
 
 impl AWSCredentials {
@@ -54,6 +56,13 @@ impl AWSCredentials {
             .unwrap()
             .clone()
             .unwrap();
+        let expiration = config_map
+            .get(profile)
+            .unwrap()
+            .get("expiration")
+            .unwrap()
+            .clone()
+            .unwrap();
         Self {
             credential_file: path.into(),
             age: FileAge::default(),
@@ -62,6 +71,7 @@ impl AWSCredentials {
             access_key_id,
             secret_access_key,
             session_token,
+            expiration,
         }
     }
 

@@ -156,15 +156,12 @@ impl Sso {
     pub async fn get_role_credentials(
         &self,
         provider: AccountInfoProvider,
-        account: AccountInfo,
-        role: String,
-        token: AccessToken,
+        account: &AccountInfo,
+        role: &str,
+        token: &AccessToken,
     ) -> Result<GetRoleCredentialsOutput> {
         // Get role credentials
-        let role_credentials = provider
-            .get_role_credentials(&role, &account, &token)
-            .await?;
-        println!("{:#?}", role_credentials.role_credentials());
+        let role_credentials = provider.get_role_credentials(role, account, token).await?;
         Ok(role_credentials)
     }
 
@@ -193,13 +190,13 @@ impl Sso {
         let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
         let sso_region = Select::new("SSO region:", regions).prompt()?;
 
-        // Set account info provider
+        // Set the account info provider
         let account_info_provider = AccountInfoProvider::new(&config);
 
         // Get session name
         let session_name = self.get_session_name(start_url.as_str());
 
-        // Register client device and retrieve the access token
+        // Register client device and get the access token
         let access_token = self
             .get_session_token(&start_url, &session_name, &config, &aws_config_dir)
             .await?;
@@ -218,7 +215,18 @@ impl Sso {
         roles.sort();
         let selected_role = Select::new("Select role:", roles).prompt()?;
 
-        // Create AWS profile
+        // Get the role credentials
+        let role_credentials = self
+            .get_role_credentials(
+                account_info_provider,
+                &selected_account,
+                &selected_role,
+                &access_token,
+            )
+            .await?;
+        println!("{:#?}", role_credentials.role_credentials());
+
+        // Create or update AWS config file
         let aws_config_service = AwsCliConfig::new(&aws_config_file);
         let profile_name = aws_config_service.create_or_update_profile(
             &selected_account.account_id,
