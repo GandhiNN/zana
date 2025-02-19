@@ -1,4 +1,5 @@
 use crate::aws::config::AwsCliConfig;
+use crate::aws::credentials::AWSCredentials;
 use crate::aws::region;
 use crate::aws::sso_token::AccessToken;
 use crate::utils::common::get_home_dir;
@@ -17,6 +18,7 @@ use super::sso_token::SsoAccessTokenProvider;
 // Constants
 const PARENT_CONFIG_PATH: &str = ".aws_sso";
 const CONFIG_PATH: &str = "config";
+const CREDENTIALS_PATH: &str = "credentials";
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -185,6 +187,7 @@ impl Sso {
         let home_dir = get_home_dir();
         let aws_config_dir = self.get_config_dir(&home_dir).unwrap();
         let aws_config_file = aws_config_dir.join(CONFIG_PATH);
+        let aws_credentials_file = aws_config_dir.join(CREDENTIALS_PATH);
 
         let start_url = Text::new("SSO start-url:").prompt()?;
         let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
@@ -216,7 +219,7 @@ impl Sso {
         let selected_role = Select::new("Select role:", roles).prompt()?;
 
         // Get the role credentials
-        let role_credentials = self
+        let _role_credentials = self
             .get_role_credentials(
                 account_info_provider,
                 &selected_account,
@@ -224,7 +227,22 @@ impl Sso {
                 &access_token,
             )
             .await?;
-        println!("{:#?}", role_credentials.role_credentials());
+
+        // Create or update AWS credentials file
+        // TODO!
+        let account_id = selected_account.account_id.clone();
+        print!(
+            "Please type the profile to use for the AWS credentials file (default = {}): ",
+            account_id
+        );
+        let profile = String::new();
+        let _aws_credentials_service = AWSCredentials::new(&aws_credentials_file, profile.as_str());
+        println!("{}", account_id);
+        println!(
+            "Writing AWS credentials using profile: {} to {}",
+            profile,
+            aws_credentials_file.display()
+        );
 
         // Create or update AWS config file
         let aws_config_service = AwsCliConfig::new(&aws_config_file);
