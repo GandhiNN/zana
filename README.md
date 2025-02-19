@@ -1,5 +1,9 @@
 # Zana
-CLI wrapper for AWS SDK
+Zana is a wrapper for AWS SDK written in Rust.
+
+It simplifies programmatic interation with AWS within your local environment.
+
+Think of it as a `kubectl`-like CLI for daily operational use cases with your AWS environment.
 
 ## Cost-Explorer API
 The following description explains cost types that we can use as input for the `cost-explorer` API:  
@@ -21,3 +25,6 @@ It is calculated by multiplying each account's service usage agains something ca
 
 6. UsageQuantity
 <TBC>
+
+# Author(s)
+* Ngakan Gandhi
