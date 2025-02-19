@@ -1,5 +1,6 @@
 use anyhow::Result;
 use configparser::ini::Ini;
+use std::error::Error;
 use std::fmt;
 use std::fs::File;
 use std::path::{Path, PathBuf};
@@ -82,5 +83,12 @@ impl AwsCredentialsConfig {
             hours,
             minutes,
         }
+    }
+
+    pub fn load_credentials(&mut self) -> Result<(), Box<dyn Error>> {
+        let mut config = Ini::new();
+        let map = config.load(&self.credentials_file)?;
+        println!("{:?}", map);
+        Ok(())
     }
 }
