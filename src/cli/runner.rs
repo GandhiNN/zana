@@ -34,7 +34,11 @@ pub async fn run(credentials_path: PathBuf) {
         credentials_path.display(),
         profile
     );
-    let _is_cred_valid = check_credentials_validity(&credentials_path, profile).await;
+    let is_cred_valid = check_credentials_validity(&credentials_path, profile).await;
+    if !is_cred_valid.unwrap() {
+        error!("Invalid credentials file or profile name, exiting the program!");
+        std::process::exit(exitcode::OK);
+    }
     let aws_credentials = AWSCredentials::new(&credentials_path, profile);
     let shared_config: aws_types::SdkConfig = aws_credentials.set_config(*timeout).await;
 
