@@ -182,7 +182,7 @@ impl Sso {
         token_provider.get_access_token(url).await
     }
 
-    pub async fn configure_sso(&self, config: SdkConfig) -> Result<()> {
+    pub async fn register_sso(&self, config: SdkConfig) -> Result<()> {
         // Prepare the configuration
         let home_dir = get_home_dir();
         let aws_config_dir = self.get_config_dir(&home_dir).unwrap();

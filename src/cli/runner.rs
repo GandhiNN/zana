@@ -353,7 +353,7 @@ pub async fn run(credentials_path: PathBuf) {
                     let subcommands = sub_matches.subcommand().unwrap();
                     match subcommands {
                         ("configure", _) => {
-                            let _res = sso.configure_sso(shared_config).await;
+                            let _res = sso.register_sso(shared_config).await;
                         }
                         _ => error!("Unknown input"),
                     }
