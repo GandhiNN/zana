@@ -216,6 +216,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "aws-sdk-cloudfront"
+version = "1.65.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53118542f6c26a6d15c326a3960b7d668c8e91d8c178b3d3c94b56671d300846"
+dependencies = [
+ "aws-credential-types",
+ "aws-runtime",
+ "aws-smithy-async",
+ "aws-smithy-http",
+ "aws-smithy-json",
+ "aws-smithy-runtime",
+ "aws-smithy-runtime-api",
+ "aws-smithy-types",
+ "aws-smithy-xml",
+ "aws-types",
+ "http 0.2.12",
+ "once_cell",
+ "regex-lite",
+ "tracing",
+]
+
+[[package]]
 name = "aws-sdk-costexplorer"
 version = "1.65.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3137,6 +3159,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-bedrock",
  "aws-sdk-bedrockruntime",
+ "aws-sdk-cloudfront",
  "aws-sdk-costexplorer",
  "aws-sdk-docdb",
  "aws-sdk-dynamodb",
