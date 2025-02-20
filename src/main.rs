@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::path::PathBuf;
 use tracing::info;
 use tracing_subscriber::fmt as TracingSubscriberFmt;
-use zana::aws::credentials_v2::{check_credentials_validity, load_credentials_file};
+use zana::aws::credentials::{check_credentials_validity, load_credentials_file};
 use zana::cli;
 
 #[tokio::main]
