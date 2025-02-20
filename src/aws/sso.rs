@@ -263,3 +263,19 @@ impl Sso {
         Ok(())
     }
 }
+
+pub fn configure_sso() -> Result<SsoConfig> {
+    let start_url = Text::new("SSO start-url:").prompt()?;
+    let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
+    let sso_region = Select::new("SSO region:", regions).prompt()?;
+    Ok(SsoConfig {
+        start_url,
+        region: sso_region,
+    })
+}
+
+pub fn session_name(start_url: &str) -> String {
+    let start_url_without_schema = start_url.replace("https://", "");
+    let (subdomain, _) = start_url_without_schema.split_once(".").unwrap();
+    format!("sso-{}", &subdomain)
+}

@@ -7,8 +7,7 @@ use std::path::PathBuf;
 use tracing::info;
 use tracing_subscriber::fmt as TracingSubscriberFmt;
 use zana::aws::credentials_v2::AwsCredentialsConfig;
-use zana::aws::region::REGIONS;
-use zana::aws::sso::{AccountInfoProvider, SsoConfig};
+use zana::aws::sso::{configure_sso, session_name, AccountInfoProvider};
 use zana::aws::sso_token::SsoAccessTokenProvider;
 use zana::cli;
 use zana::utils::fileutil::get_file_age;
@@ -111,22 +110,6 @@ async fn check_credentials_validity(path: &str) -> Result<bool> {
         }
     }
     Ok(true)
-}
-
-fn configure_sso() -> Result<SsoConfig> {
-    let start_url = Text::new("SSO start-url:").prompt()?;
-    let regions: Vec<String> = REGIONS.iter().map(|x| x.to_string()).collect();
-    let sso_region = Select::new("SSO region:", regions).prompt()?;
-    Ok(SsoConfig {
-        start_url,
-        region: sso_region,
-    })
-}
-
-fn session_name(start_url: &str) -> String {
-    let start_url_without_schema = start_url.replace("https://", "");
-    let (subdomain, _) = start_url_without_schema.split_once(".").unwrap();
-    format!("sso-{}", &subdomain)
 }
 
 #[tokio::main]
