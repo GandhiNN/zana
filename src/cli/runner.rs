@@ -27,10 +27,6 @@ pub async fn run(credentials_path: PathBuf) {
         .unwrap_or(&default_profile);
     let timeout: &u64 = matches.get_one::<u64>("timeout").unwrap_or(&(5000_u64));
 
-    // // Load AWS Credentials configuration
-    // let mut credentials_v2 = AwsCredentialsConfig::new(&PathBuf::from(credentials_path));
-    // // Check for credentials age
-
     // Load AWS Credentials Configuration
     info!(
         "Using shared config from {} with profile name: {}",

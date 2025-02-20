@@ -309,6 +309,8 @@ pub async fn check_credentials_validity(path: &str) -> Result<bool> {
             )?;
         }
     } else {
+        // credentials file exists
+        // check for age of the credentials file
         let credentials_age = get_file_age(PathBuf::from(&path));
         info!("Credentials file age: {}", credentials_age);
         if credentials_age.age_duration > time::Duration::from_secs(6 * 3600) {
@@ -319,6 +321,11 @@ pub async fn check_credentials_validity(path: &str) -> Result<bool> {
             if is_continue == "no" {
                 return Ok(false);
             }
+        } else {
+            // credentials file is not older than 6 hours
+            info!("Credentials are up-to-date");
+            // check if `profile` exists in the credentials file
+            todo!()
         }
     }
     Ok(true)
