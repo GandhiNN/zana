@@ -6,6 +6,7 @@ use inquire::{Select, Text};
 use std::path::PathBuf;
 use tracing::info;
 use tracing_subscriber::fmt as TracingSubscriberFmt;
+use zana::aws::credentials_v2::AwsCredentialsConfig;
 use zana::aws::region::REGIONS;
 use zana::aws::sso::{AccountInfoProvider, SsoConfig};
 use zana::aws::sso_token::SsoAccessTokenProvider;
@@ -71,7 +72,6 @@ async fn check_credentials_validity(path: &str) -> Result<bool> {
             let role_credentials = account_info_provider
                 .get_role_credentials(&selected_role, &selected_account, &access_token)
                 .await?;
-            println!("{:#?}", role_credentials.role_credentials);
             let (mut access_key_id, mut secret_access_key, mut session_token, mut expiration) =
                 (String::new(), String::new(), String::new(), String::new());
             let _ = role_credentials
@@ -84,10 +84,18 @@ async fn check_credentials_validity(path: &str) -> Result<bool> {
                     expiration = x.expiration().to_string();
                 })
                 .collect::<Vec<()>>();
-            println!("Access key ID: {}", access_key_id);
-            println!("Secret access key: {}", secret_access_key);
-            println!("Session token: {}", session_token);
-            println!("Expiration: {}", expiration);
+            let profile = Text::new("Please input profile name:").prompt()?;
+            // Write credentials to file
+            let aws_credentials_config = AwsCredentialsConfig::new(&PathBuf::from(path))?;
+            aws_credentials_config.create_or_update_credentials(
+                profile.as_str(),
+                sso_config.region.as_str(),
+                selected_account.account_id.as_str(),
+                access_key_id.as_str(),
+                secret_access_key.as_str(),
+                session_token.as_str(),
+                expiration.parse::<i64>().unwrap(),
+            )?;
         }
     } else {
         let credentials_age = get_file_age(PathBuf::from(&path));

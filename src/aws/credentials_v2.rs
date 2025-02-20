@@ -3,7 +3,7 @@ use configparser::ini::Ini;
 use std::error::Error;
 use std::fmt;
 use std::fs::File;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::string::String;
 use std::time;
 
@@ -26,8 +26,9 @@ pub struct AwsCredentialsConfig {
     pub age: FileAge,
 }
 
+#[allow(clippy::too_many_arguments)]
 impl AwsCredentialsConfig {
-    pub fn new(credentials_file: &Path) -> Result<Self> {
+    pub fn new(credentials_file: &PathBuf) -> Result<Self> {
         if !credentials_file.exists() {
             File::create(credentials_file)?;
         }
@@ -45,6 +46,7 @@ impl AwsCredentialsConfig {
         access_key_id: &str,
         secret_access_key: &str,
         session_token: &str,
+        expiration: i64,
     ) -> Result<String> {
         let mut credentials = Ini::new();
         credentials.set(profile, "aws_account_id", Some(String::from(account_id)));
@@ -64,6 +66,7 @@ impl AwsCredentialsConfig {
             "aws_session_token",
             Some(String::from(session_token)),
         );
+        credentials.set(profile, "expiration", Some(expiration.to_string()));
 
         let _ = credentials.write(&self.credentials_file);
 
