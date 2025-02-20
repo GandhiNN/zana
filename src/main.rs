@@ -137,8 +137,7 @@ async fn main() -> Result<()> {
 
     // Credentials validity check
     let credentials = load_credentials_file();
-    let is_cred_valid = check_credentials_validity(&credentials).await?;
-    println!("{}", is_cred_valid);
+    let _is_cred_valid = check_credentials_validity(&credentials).await?;
 
     // Handle CLI arguments
     cli::runner::run(PathBuf::from(credentials)).await;

@@ -32,7 +32,11 @@ pub async fn run(credentials_path: PathBuf) {
     // // Check for credentials age
 
     // Load AWS Credentials Configuration
-    info!("Using shared config with profile name: {}", profile);
+    info!(
+        "Using shared config from {} with profile name: {}",
+        credentials_path.display(),
+        profile
+    );
     let aws_credentials = AWSCredentials::new(&credentials_path, profile);
     let shared_config: aws_types::SdkConfig = aws_credentials.set_config(*timeout).await;
 
