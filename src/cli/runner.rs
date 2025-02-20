@@ -1,6 +1,8 @@
 use crate::aws::bedrock::Bedrock;
 use crate::aws::bedrock_runtime::BedrockRuntime;
+use crate::aws::cloudfront::CloudFront;
 use crate::aws::cost_explorer::CostExplorer;
+use crate::aws::credentials::check_credentials_validity;
 use crate::aws::credentials::AWSCredentials;
 use crate::aws::docdb::DocDB;
 use crate::aws::dynamodb::DynamoDB;
@@ -12,7 +14,6 @@ use crate::aws::s3;
 use crate::aws::sso::Sso;
 use crate::cli::cmd;
 use crate::utils::common::{pretty_print, write_csv};
-
 use std::path::PathBuf;
 use tracing::{error, info};
 
@@ -33,6 +34,7 @@ pub async fn run(credentials_path: PathBuf) {
         credentials_path.display(),
         profile
     );
+    let _is_cred_valid = check_credentials_validity(&credentials_path, profile).await;
     let aws_credentials = AWSCredentials::new(&credentials_path, profile);
     let shared_config: aws_types::SdkConfig = aws_credentials.set_config(*timeout).await;
 
@@ -357,6 +359,16 @@ pub async fn run(credentials_path: PathBuf) {
                         }
                         _ => error!("Unknown input"),
                     }
+                }
+                _ => error!("Unknown input"),
+            }
+        }
+        Some(("cloudfront", sub_matches)) => {
+            let cloudfront = CloudFront::new(shared_config);
+            let cloudfront_commands = sub_matches.subcommand().unwrap();
+            match cloudfront_commands {
+                ("list-distributions", _) => {
+                    let _res = cloudfront.list_distributions().await;
                 }
                 _ => error!("Unknown input"),
             }

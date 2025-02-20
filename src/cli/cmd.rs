@@ -216,4 +216,12 @@ pub fn cmd() -> Command {
                         )
                 ),
         )
+        .subcommand(
+            Command::new("cloudfront")
+                .about("CloudFront API")
+                .subcommand(
+                    Command::new("list-distributions")
+                        .about("List CloudFront distributions")
+                ),
+        )
 }

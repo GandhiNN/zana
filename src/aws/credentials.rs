@@ -234,7 +234,7 @@ pub fn load_credentials_file() -> String {
     std::env::var("CREDENTIALS_PATH").unwrap_or(default_credentials_path)
 }
 
-pub async fn check_credentials_validity(path: &str) -> Result<bool> {
+pub async fn check_credentials_validity(path: &PathBuf, profile: &str) -> Result<bool> {
     // Load config file
     let base_dirs = BaseDirs::new().unwrap();
     let home_dir = base_dirs.home_dir().to_string_lossy().to_string();
@@ -242,7 +242,10 @@ pub async fn check_credentials_validity(path: &str) -> Result<bool> {
 
     // Quit program if credentials file does not exist
     if !PathBuf::from(path).exists() {
-        info!("Credentials file {} does not exist", &path);
+        info!(
+            "Credentials file {} does not exist",
+            &path.to_string_lossy()
+        );
         let is_configure = Select::new(
             "Would you like to configure it? [yes/no]",
             vec!["yes", "no"],
@@ -295,11 +298,11 @@ pub async fn check_credentials_validity(path: &str) -> Result<bool> {
                     expiration = x.expiration().to_string();
                 })
                 .collect::<Vec<()>>();
-            let profile = Text::new("Please input profile name:").prompt()?;
+            let new_profile = Text::new("Please input profile name:").prompt()?;
             // Write credentials to file
             let aws_credentials_config = AwsCredentialsConfig::new(&PathBuf::from(path))?;
             aws_credentials_config.create_or_update_credentials(
-                profile.as_str(),
+                new_profile.as_str(),
                 sso_config.region.as_str(),
                 selected_account.account_id.as_str(),
                 access_key_id.as_str(),
@@ -325,6 +328,13 @@ pub async fn check_credentials_validity(path: &str) -> Result<bool> {
             // credentials file is not older than 6 hours
             info!("Credentials are up-to-date");
             // check if `profile` exists in the credentials file
+            let credentials_profile = Ini::new().load(path).unwrap();
+            if !credentials_profile.contains_key(profile) {
+                println!("Profile does not exist!");
+            } else {
+                println!("Profile exist!")
+            }
+            println!("{:#?}", credentials_profile);
             todo!()
         }
     }
