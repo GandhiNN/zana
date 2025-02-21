@@ -224,4 +224,12 @@ pub fn cmd() -> Command {
                         .about("List CloudFront distributions")
                 ),
         )
+        .subcommand(
+            Command::new("secrets-manager")
+                .about("Secrets Manager API")
+                .subcommand(
+                    Command::new("list-secrets")
+                        .about("List secrets")
+                ),
+        )
 }

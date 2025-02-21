@@ -11,6 +11,7 @@ use crate::aws::rds::RDS;
 use crate::aws::redshift::Redshift;
 use crate::aws::resource_explorer::ResourceExplorer;
 use crate::aws::s3;
+use crate::aws::secrets_manager::SecretsManager;
 use crate::aws::sso::Sso;
 use crate::cli::cmd;
 use crate::utils::common::{pretty_print, write_csv};
@@ -373,6 +374,16 @@ pub async fn run(credentials_path: PathBuf) {
             match cloudfront_commands {
                 ("list-distributions", _) => {
                     let _res = cloudfront.list_distributions().await;
+                }
+                _ => error!("Unknown input"),
+            }
+        }
+        Some(("secrets-manager", sub_matches)) => {
+            let secrets_manager = SecretsManager::new(shared_config);
+            let secrets_manager_commands = sub_matches.subcommand().unwrap();
+            match secrets_manager_commands {
+                ("list-secrets", _) => {
+                    let _res = secrets_manager.list_secrets().await;
                 }
                 _ => error!("Unknown input"),
             }
