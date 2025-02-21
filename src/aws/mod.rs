@@ -12,5 +12,6 @@ pub mod redshift;
 pub mod region;
 pub mod resource_explorer;
 pub mod s3;
+pub mod secrets_manager;
 pub mod sso;
 pub mod sso_token;
