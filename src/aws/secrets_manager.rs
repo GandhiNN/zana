@@ -13,8 +13,17 @@ impl SecretsManager {
     }
 
     pub async fn list_secrets(&self) -> Result<()> {
-        let resp = self.client.list_secrets().send().await?;
-        println!("{:#?}", resp);
+        let mut secrets = self.client.list_secrets().into_paginator().send();
+        while let Some(output) = secrets.next().await {
+            match output {
+                Ok(secret) => {
+                    println!("{:#?}", secret);
+                }
+                Err(e) => {
+                    println!("{:?}", e);
+                }
+            }
+        }
         Ok(())
     }
 }
