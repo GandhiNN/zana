@@ -1,3 +1,4 @@
+use crate::browser::Browser;
 use crate::utils::json;
 use crate::utils::serde::json_date_format;
 use anyhow::{anyhow, Result};
@@ -152,7 +153,8 @@ impl SsoAccessTokenProvider {
             .await?;
 
         // Prompt user to open browser
-        open::that(auth_response.verification_uri_complete().unwrap())?;
+        // open::that(auth_response.verification_uri_complete().unwrap())?;
+        Browser::browse_edge_inprivate(auth_response.verification_uri_complete().unwrap());
 
         // TODO: Implement timeout for browser inactivity termination
         // i.e. if user is not responding to browser prompt, terminate after n seconds

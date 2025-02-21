@@ -11,6 +11,8 @@ use configparser::ini::Ini;
 use directories::BaseDirs;
 use inquire::{Select, Text};
 use std::env::set_var;
+use std::fs::File;
+use std::io::Write;
 use std::path::PathBuf;
 use std::time;
 use tracing::info;
@@ -109,6 +111,12 @@ impl AWSCredentials {
             return Ok(false);
         }
         Ok(true)
+    }
+
+    fn create_credentials_file(&self) -> Result<()> {
+        let mut f = File::create(&self.credentials_file)?;
+        f.write_all("placeholder".as_bytes())?;
+        Ok(())
     }
 
     fn get_credentials_file_age(&self) -> Result<FileAge> {
@@ -246,7 +254,11 @@ impl AWSCredentials {
                 }
             }
         } else {
-            info!("Credentials file {} does not exist.", self.credentials_file);
+            info!(
+                "Credentials file {} does not exists. Creating the file",
+                self.credentials_file
+            );
+            self.create_credentials_file()?;
             let is_configure =
                 Select::new(Prompt::CONFIGURE_CREDENTIALS, vec!["yes", "no"]).prompt()?;
             info!("Configuring credentials.");
