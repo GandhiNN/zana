@@ -19,6 +19,14 @@ use tracing::info;
 
 const DEFAULT_CREDENTIALS_PATH: &str = ".aws_sso/credentials";
 const DEFAULT_CONFIG_PATH: &str = ".aws_sso/config";
+const CREDENTIALS_PLACEHOLDER: &str = "
+[dummy_profile]
+aws_account_id=11111111111
+region=eu-west-1
+aws_secret_access_key=dummy_secret_access_key
+aws_access_key_id=dummy_access_key_id
+aws_session_token=dummy_session_token
+";
 
 #[allow(dead_code)]
 #[derive(Default)]
@@ -115,7 +123,7 @@ impl AWSCredentials {
 
     fn create_credentials_file(&self) -> Result<()> {
         let mut f = File::create(&self.credentials_file)?;
-        f.write_all("placeholder".as_bytes())?;
+        f.write_all(CREDENTIALS_PLACEHOLDER.as_bytes())?;
         Ok(())
     }
 
