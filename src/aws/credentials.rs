@@ -106,14 +106,6 @@ impl AWSCredentials {
         }
     }
 
-    // TODO: Complete the method
-    pub fn check_or_create_credentials_file(&self) -> Result<()> {
-        if !&self.credential_file.try_exists()? {
-            File::create(&self.credential_file)?;
-        }
-        Ok(())
-    }
-
     pub async fn set_config(&self, timeout: u64) -> aws_types::SdkConfig {
         // Load AWS credentials chain
         let region = DefaultRegionChain::builder()
