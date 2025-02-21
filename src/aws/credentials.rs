@@ -301,6 +301,7 @@ pub async fn check_credentials_validity(path: &PathBuf, profile: &str) -> Result
             let new_profile = Text::new("Please input profile name:").prompt()?;
             // Write credentials to file
             let aws_credentials_config = AwsCredentialsConfig::new(&PathBuf::from(path))?;
+            println!("Updating credentials file using profile: {}", new_profile);
             aws_credentials_config.create_or_update_credentials(
                 new_profile.as_str(),
                 sso_config.region.as_str(),
@@ -323,6 +324,77 @@ pub async fn check_credentials_validity(path: &PathBuf, profile: &str) -> Result
                 Select::new("Would you like to continue? [yes/no]", vec!["yes", "no"]).prompt()?;
             if is_continue == "no" {
                 return Ok(false);
+            } else {
+                let is_configure = Select::new(
+                    "Would you like to re-configure the profile? [yes/no]",
+                    vec!["yes", "no"],
+                )
+                .prompt()?;
+                if is_configure == "no" {
+                    info!("Continuing with the same credentials");
+                    return Ok(true);
+                } else {
+                    info!("Configuring credentials...");
+                    let sso_config = configure_sso()?;
+                    let config = aws_config::SdkConfig::builder()
+                        .region(Region::new(sso_config.region.clone()))
+                        .behavior_version(BehaviorVersion::latest())
+                        .build();
+                    let account_info_provider = AccountInfoProvider::new(&config);
+                    let session_name = session_name(sso_config.start_url.as_str());
+                    let token_provider = SsoAccessTokenProvider::new(
+                        &config,
+                        session_name.as_str(),
+                        &PathBuf::from(aws_config_dir),
+                    )?;
+                    let access_token = token_provider
+                        .get_access_token(&sso_config.start_url)
+                        .await?;
+                    let mut sso_accounts = account_info_provider
+                        .get_account_list(&access_token)
+                        .await?;
+                    sso_accounts.sort();
+                    let selected_account = Select::new("Select account:", sso_accounts).prompt()?;
+                    let mut roles = account_info_provider
+                        .get_roles_for_account(&access_token, &selected_account)
+                        .await?;
+                    roles.sort();
+                    let selected_role = Select::new("Select role:", roles).prompt()?;
+
+                    // Get role credentials
+                    let role_credentials = account_info_provider
+                        .get_role_credentials(&selected_role, &selected_account, &access_token)
+                        .await?;
+                    let (
+                        mut access_key_id,
+                        mut secret_access_key,
+                        mut session_token,
+                        mut expiration,
+                    ) = (String::new(), String::new(), String::new(), String::new());
+                    let _ = role_credentials
+                        .role_credentials
+                        .into_iter()
+                        .map(|x| {
+                            access_key_id = x.access_key_id().unwrap().to_string();
+                            secret_access_key = x.secret_access_key().unwrap().to_string();
+                            session_token = x.session_token().unwrap().to_string();
+                            expiration = x.expiration().to_string();
+                        })
+                        .collect::<Vec<()>>();
+                    let new_profile = Text::new("Please input profile name:").prompt()?;
+                    // Write credentials to file
+                    let aws_credentials_config = AwsCredentialsConfig::new(&PathBuf::from(path))?;
+                    println!("Updating credentials file using profile: {}", new_profile);
+                    aws_credentials_config.create_or_update_credentials(
+                        new_profile.as_str(),
+                        sso_config.region.as_str(),
+                        selected_account.account_id.as_str(),
+                        access_key_id.as_str(),
+                        secret_access_key.as_str(),
+                        session_token.as_str(),
+                        expiration.parse::<i64>().unwrap(),
+                    )?;
+                }
             }
         } else {
             // credentials file is not older than 6 hours
