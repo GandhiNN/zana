@@ -6,6 +6,7 @@ use aws_config::default_provider::credentials::DefaultCredentialsChain;
 use aws_config::default_provider::region::DefaultRegionChain;
 use aws_config::timeout::TimeoutConfig;
 use aws_config::BehaviorVersion;
+use aws_sdk_ssooidc::config::StalledStreamProtectionConfig;
 use aws_types::region::Region;
 use configparser::ini::Ini;
 use directories::BaseDirs;
@@ -17,10 +18,10 @@ use std::path::PathBuf;
 use std::time;
 use tracing::info;
 
+const DEFAULT_AWS_SSO_PATH: &str = ".aws_sso";
 const DEFAULT_CREDENTIALS_PATH: &str = ".aws_sso/credentials";
 const DEFAULT_CONFIG_PATH: &str = ".aws_sso/config";
-const CREDENTIALS_PLACEHOLDER: &str = "
-[dummy_profile]
+const CREDENTIALS_PLACEHOLDER: &str = "[dummy_profile]
 aws_account_id=11111111111
 region=eu-west-1
 aws_secret_access_key=dummy_secret_access_key
@@ -29,7 +30,7 @@ aws_session_token=dummy_session_token
 ";
 
 #[allow(dead_code)]
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct AWSCredentials {
     aws_config_dir: String,
     pub credentials_file: String,
@@ -79,6 +80,7 @@ impl AWSCredentials {
     pub async fn load(&mut self, path: &PathBuf, profile: &str) {
         let mut config_reader = Ini::new();
         let config_map = config_reader.load::<PathBuf>(path.into()).unwrap();
+        println!("{:#?}", config_map);
         self.region = config_map
             .get(profile)
             .unwrap()
@@ -112,10 +114,6 @@ impl AWSCredentials {
     pub fn check_credentials_file_existence(&self) -> Result<bool> {
         // Check if credentials file exists
         if !PathBuf::from(&self.credentials_file).exists() {
-            info!(
-                "Credentials file {} does not exists.",
-                self.credentials_file
-            );
             return Ok(false);
         }
         Ok(true)
@@ -212,6 +210,7 @@ impl AWSCredentials {
                     let access_token = token_provider
                         .get_access_token(&sso_default_config.start_url)
                         .await?;
+                    println!("{:?}", access_token);
                     let mut sso_accounts = account_info_provider
                         .get_account_list(&access_token)
                         .await?;
@@ -269,22 +268,35 @@ impl AWSCredentials {
             self.create_credentials_file()?;
             let is_configure =
                 Select::new(Prompt::CONFIGURE_CREDENTIALS, vec!["yes", "no"]).prompt()?;
-            info!("Configuring credentials.");
+            info!("Configuring credentials...");
             let sso_default_config = Sso::configure_sso()?;
+            info!("Building default config...");
+            // Set default timeout config
+            let default_timeout_config = TimeoutConfig::builder()
+                .connect_timeout(time::Duration::from_secs(10000))
+                .operation_timeout(time::Duration::from_secs(10000 * 3))
+                .operation_attempt_timeout(time::Duration::from_secs(10000 * 3 * 3))
+                .build();
             let config: aws_types::SdkConfig = aws_config::SdkConfig::builder()
                 .region(Region::new(sso_default_config.region.clone()))
                 .behavior_version(BehaviorVersion::latest())
+                .stalled_stream_protection(StalledStreamProtectionConfig::disabled())
+                .timeout_config(default_timeout_config)
                 .build();
+            info!("Retrieving account info...");
             let account_info_provider = AccountInfoProvider::new(&config);
+            info!("Retrieving session name...");
             let session_name = session_name(sso_default_config.start_url.as_str());
             let token_provider = SsoAccessTokenProvider::new(
                 &config,
                 session_name.as_str(),
-                &PathBuf::from(&self.aws_config_dir),
+                &PathBuf::from(load_cache_file()),
             )?;
+            info!("Retrieving access token...");
             let access_token = token_provider
                 .get_access_token(&sso_default_config.start_url)
                 .await?;
+            info!("Retrieving sso accounts...");
             let mut sso_accounts = account_info_provider
                 .get_account_list(&access_token)
                 .await?;
@@ -383,4 +395,12 @@ pub fn load_credentials_file() -> String {
     let home_dir = base_dirs.home_dir().to_string_lossy().to_string();
     let default_credentials_path = format!("{}/{}", home_dir, DEFAULT_CREDENTIALS_PATH);
     std::env::var("CREDENTIALS_PATH").unwrap_or(default_credentials_path)
+}
+
+pub fn load_cache_file() -> String {
+    // Load credentials file
+    let base_dirs = BaseDirs::new().unwrap();
+    let home_dir = base_dirs.home_dir().to_string_lossy().to_string();
+    let default_sso_cache_path = format!("{}/{}", home_dir, DEFAULT_AWS_SSO_PATH);
+    std::env::var("SSO_CACHE_PATH").unwrap_or(default_sso_cache_path)
 }

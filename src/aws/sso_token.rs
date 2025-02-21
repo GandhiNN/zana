@@ -8,6 +8,7 @@ use chrono::{DateTime, Duration, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::{fs, io::Write};
+use tracing::info;
 
 // Define constants
 const CLIENT_NAME: &str = "zana-rs";
@@ -47,6 +48,7 @@ impl AccessTokenCache {
     }
     pub fn get_cached_token(&self) -> Result<AccessToken> {
         let cache_file_path = self.cache_dir.join(format!("{}.json", self.hash_key()));
+        info!("Reading token cache from {}", cache_file_path.display());
         json::read_from_file(cache_file_path.as_path())
     }
     pub fn cache_token(&self, access_token: AccessToken) -> Result<AccessToken> {
@@ -86,9 +88,20 @@ pub struct SsoAccessTokenProvider {
 impl SsoAccessTokenProvider {
     pub fn new(config: &SdkConfig, sso_session_name: &str, config_dir: &Path) -> Result<Self> {
         let sso_cache_dir = config_dir.join("sso").join("cache");
+        info!(
+            "Checking if SSO cache directory: {} exists...",
+            sso_cache_dir.display()
+        );
         if !sso_cache_dir.exists() {
+            info!(
+                "SSO cache directory: {} does not exists! creating...",
+                sso_cache_dir.display()
+            );
             fs::create_dir_all(&sso_cache_dir)?;
+        } else {
+            info!("SSO cache directory {} exists...", sso_cache_dir.display())
         }
+
         Ok(Self {
             sso_session_name: String::from(sso_session_name),
             client: Client::new(config),
@@ -97,13 +110,17 @@ impl SsoAccessTokenProvider {
     }
 
     pub async fn get_access_token(&self, start_url: &str) -> Result<AccessToken> {
+        info!("Checking cached token...");
         let cached_token_option = self.cache.get_cached_token();
+        println!("{:?}", cached_token_option);
 
         match cached_token_option {
             Ok(cached_token) => {
                 if cached_token.is_expired() {
+                    info!("Cached token expired, getting a new one...");
                     self.get_new_token(start_url).await
                 } else {
+                    info!("Cached token still valid, refreshing...");
                     self.refresh_token(cached_token).await
                 }
             }
@@ -112,8 +129,12 @@ impl SsoAccessTokenProvider {
     }
 
     async fn get_new_token(&self, start_url: &str) -> Result<AccessToken> {
-        let device_client = self.register_device_client().await?;
-        self.authenticate(start_url, device_client).await
+        info!("Registering device client...");
+        // let device_client = self.register_device_client().await?;
+        let device_client = self.register_device_client().await;
+        println!("{:?}", device_client);
+        info!("Authenticating device client...");
+        self.authenticate(start_url, device_client?).await
     }
 
     async fn register_device_client(&self) -> Result<DeviceClient, anyhow::Error> {
