@@ -230,6 +230,8 @@ pub fn cmd() -> Command {
                 .subcommand(
                     Command::new("list-secrets")
                         .about("List secrets")
+                        .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
+                        .arg_required_else_help(true),
                 ),
         )
 }

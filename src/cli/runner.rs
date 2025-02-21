@@ -382,8 +382,14 @@ pub async fn run(credentials_path: PathBuf) {
             let secrets_manager = SecretsManager::new(shared_config);
             let secrets_manager_commands = sub_matches.subcommand().unwrap();
             match secrets_manager_commands {
-                ("list-secrets", _) => {
-                    let _res = secrets_manager.list_secrets().await;
+                ("list-secrets", flags) => {
+                    let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
+                    let res = secrets_manager.list_secrets().await;
+                    if *pretty {
+                        pretty_print(res.unwrap());
+                    } else {
+                        let _ = write_csv(res.unwrap());
+                    }
                 }
                 _ => error!("Unknown input"),
             }
