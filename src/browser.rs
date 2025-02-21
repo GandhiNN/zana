@@ -4,9 +4,15 @@ use ini::ini;
 use std::collections::HashMap;
 use std::fs;
 use std::io::prelude::*;
+use std::process::Command;
 use tracing::info;
 
 const OSRELEASE: &str = "/proc/sys/kernel/osrelease";
+const EDGE_PATH_WIN: &str = "\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+const EDGE_PATH_WSL: &str = "/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
+
+/// Example browser invocation in WSL:
+/// `$ ./msedge.exe www.google.com -inprivate`
 
 #[derive(Debug)]
 pub struct RuntimeOS {
@@ -89,6 +95,13 @@ impl Browser {
         let url_config_path = format!("{}/url.ini", current_path);
         let ini = ini!(url_config_path.as_str());
         ini["url"].clone()
+    }
+
+    pub fn browse_edge_inprivate(url: &str) {
+        Command::new(EDGE_PATH_WSL)
+            .args([url, "-inprivate"])
+            .status()
+            .expect("process failed to execute");
     }
 
     pub fn print_url_map(self, url_map: &mut HashMap<String, Option<String>>) {
