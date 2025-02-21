@@ -2,7 +2,6 @@ use crate::aws::bedrock::Bedrock;
 use crate::aws::bedrock_runtime::BedrockRuntime;
 use crate::aws::cloudfront::CloudFront;
 use crate::aws::cost_explorer::CostExplorer;
-use crate::aws::credentials::check_credentials_validity;
 use crate::aws::credentials::AWSCredentials;
 use crate::aws::docdb::DocDB;
 use crate::aws::dynamodb::DynamoDB;
@@ -35,13 +34,17 @@ pub async fn run(credentials_path: PathBuf) {
         credentials_path.display(),
         profile
     );
-    let is_cred_valid = check_credentials_validity(&credentials_path, profile).await;
-    if !is_cred_valid.unwrap() {
-        error!("Invalid credentials file or profile name, exiting the program!");
-        std::process::exit(exitcode::OK);
+    let mut aws_credentials = AWSCredentials::new(profile);
+    let is_aws_credentials_exists = aws_credentials.check_credentials_file_existence();
+    if is_aws_credentials_exists.unwrap() {
+        info!("AWS credentials file exists!");
+    } else {
+        let _ = aws_credentials.configure().await;
     }
-    let aws_credentials = AWSCredentials::new(&credentials_path, profile);
-    let shared_config: aws_types::SdkConfig = aws_credentials.set_config(*timeout).await;
+
+    let shared_config: aws_types::SdkConfig = aws_credentials
+        .set_config(&credentials_path, profile, *timeout)
+        .await;
 
     // Match commands and subcommands input
     match matches.subcommand() {
