@@ -6,7 +6,6 @@ use aws_config::default_provider::credentials::DefaultCredentialsChain;
 use aws_config::default_provider::region::DefaultRegionChain;
 use aws_config::timeout::TimeoutConfig;
 use aws_config::BehaviorVersion;
-use aws_sdk_ssooidc::config::StalledStreamProtectionConfig;
 use aws_types::region::Region;
 use configparser::ini::Ini;
 use directories::BaseDirs;
@@ -269,32 +268,21 @@ impl AWSCredentials {
             let is_configure =
                 Select::new(Prompt::CONFIGURE_CREDENTIALS, vec!["yes", "no"]).prompt()?;
             info!("Configuring credentials...");
-            let sso_default_config = Sso::configure_sso()?;
+            let sso_config = Sso::configure_sso()?;
             info!("Building default config...");
-            // Set default timeout config
-            let default_timeout_config = TimeoutConfig::builder()
-                .connect_timeout(time::Duration::from_secs(10000))
-                .operation_timeout(time::Duration::from_secs(10000 * 3))
-                .operation_attempt_timeout(time::Duration::from_secs(10000 * 3 * 3))
-                .build();
-            let config: aws_types::SdkConfig = aws_config::SdkConfig::builder()
-                .region(Region::new(sso_default_config.region.clone()))
-                .behavior_version(BehaviorVersion::latest())
-                .stalled_stream_protection(StalledStreamProtectionConfig::disabled())
-                .timeout_config(default_timeout_config)
-                .build();
+            let default_config = Sso::default_config(&sso_config)?;
             info!("Retrieving account info...");
-            let account_info_provider = AccountInfoProvider::new(&config);
+            let account_info_provider = AccountInfoProvider::new(&default_config);
             info!("Retrieving session name...");
-            let session_name = session_name(sso_default_config.start_url.as_str());
+            let session_name = session_name(sso_config.start_url.as_str());
             let token_provider = SsoAccessTokenProvider::new(
-                &config,
+                &default_config,
                 session_name.as_str(),
                 &PathBuf::from(load_cache_file()),
             )?;
             info!("Retrieving access token...");
             let access_token = token_provider
-                .get_access_token(&sso_default_config.start_url)
+                .get_access_token(&sso_config.start_url)
                 .await?;
             info!("Retrieving sso accounts...");
             let mut sso_accounts = account_info_provider
@@ -325,11 +313,12 @@ impl AWSCredentials {
                 })
                 .collect::<Vec<()>>();
             let new_profile = Text::new(Prompt::INPUT_PROFILE).prompt()?;
+
             // Write credentials to file
             println!("Updating credentials file using profile: {}", new_profile);
             self.create_or_update_credentials(
                 new_profile.as_str(),
-                sso_default_config.region.as_str(),
+                sso_config.clone().region.as_str(),
                 selected_account.account_id.as_str(),
                 access_key_id.as_str(),
                 secret_access_key.as_str(),

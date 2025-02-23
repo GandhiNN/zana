@@ -112,7 +112,6 @@ impl SsoAccessTokenProvider {
     pub async fn get_access_token(&self, start_url: &str) -> Result<AccessToken> {
         info!("Checking cached token...");
         let cached_token_option = self.cache.get_cached_token();
-        println!("{:?}", cached_token_option);
 
         match cached_token_option {
             Ok(cached_token) => {
@@ -130,9 +129,7 @@ impl SsoAccessTokenProvider {
 
     async fn get_new_token(&self, start_url: &str) -> Result<AccessToken> {
         info!("Registering device client...");
-        // let device_client = self.register_device_client().await?;
         let device_client = self.register_device_client().await;
-        println!("{:?}", device_client);
         info!("Authenticating device client...");
         self.authenticate(start_url, device_client?).await
     }

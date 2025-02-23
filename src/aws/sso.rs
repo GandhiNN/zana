@@ -4,14 +4,19 @@ use crate::aws::region;
 use crate::aws::sso_token::AccessToken;
 use crate::utils::common::get_home_dir;
 use anyhow::Result;
+use aws_config::timeout::TimeoutConfig;
+use aws_config::BehaviorVersion;
 use aws_config::SdkConfig;
 use aws_sdk_sso::operation::get_role_credentials::GetRoleCredentialsOutput;
 use aws_sdk_sso::Client;
+use aws_sdk_ssooidc::config::StalledStreamProtectionConfig;
+use aws_types::region::Region;
 use inquire::{Select, Text};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::time;
 
 use super::sso_token::SsoAccessTokenProvider;
 
@@ -39,6 +44,22 @@ impl Sso {
             start_url,
             region: sso_region,
         })
+    }
+
+    pub fn default_config(default_config: &SsoConfig) -> Result<SdkConfig> {
+        // Set default timeout config
+        let default_timeout_config = TimeoutConfig::builder()
+            .connect_timeout(time::Duration::from_secs(10))
+            .operation_timeout(time::Duration::from_secs(10 * 3))
+            .operation_attempt_timeout(time::Duration::from_secs(10 * 3 * 3))
+            .build();
+        let config: aws_types::SdkConfig = aws_config::SdkConfig::builder()
+            .region(Region::new(default_config.region.clone()))
+            .behavior_version(BehaviorVersion::latest())
+            .stalled_stream_protection(StalledStreamProtectionConfig::disabled())
+            .timeout_config(default_timeout_config)
+            .build();
+        Ok(config)
     }
 
     fn get_config_dir(&self, home_dir: &Path) -> Result<PathBuf> {
@@ -134,7 +155,6 @@ impl Sso {
         );
         let profile = String::new();
         let _aws_credentials_service = AWSCredentials::new(profile.as_str());
-        println!("{}", account_id);
         println!(
             "Writing AWS credentials using profile: {} to {}",
             profile,
