@@ -5,7 +5,6 @@ use anyhow::Result;
 use aws_config::default_provider::credentials::DefaultCredentialsChain;
 use aws_config::default_provider::region::DefaultRegionChain;
 use aws_config::timeout::TimeoutConfig;
-use aws_config::BehaviorVersion;
 use aws_types::region::Region;
 use configparser::ini::Ini;
 use directories::BaseDirs;
