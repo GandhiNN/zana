@@ -205,7 +205,7 @@ impl AWSCredentials {
                     Select::new(Prompt::REFRESH_CREDENTIALS, vec!["yes", "no"]).prompt()?;
                 if is_refresh == "yes" {
                     info!("Refreshing credentials.");
-                    self.create_or_update_credentials().await?;
+                    self.create_or_update_credentials(false).await?;
                 } else {
                     info!("Continuing program with possibly outdated credentials.");
                     return Ok(true);
@@ -220,10 +220,13 @@ impl AWSCredentials {
                     info!("Profile: {} exists", profile);
                 } else {
                     info!("Profile: {} does not exist", profile);
+                    let is_clear_cache =
+                        Select::new(Prompt::CLEAR_CACHE, vec!["yes", "no"]).prompt()?;
+                    println!("{}", is_clear_cache);
                     let is_configure =
                         Select::new(Prompt::CONFIGURE_CREDENTIALS, vec!["yes", "no"]).prompt()?;
                     if is_configure == "yes" {
-                        self.create_or_update_credentials().await?;
+                        self.create_or_update_credentials(false).await?;
                     } else if is_configure == "no" {
                         info!("Exiting program.");
                         return Ok(false);
@@ -243,7 +246,7 @@ impl AWSCredentials {
             let is_configure =
                 Select::new(Prompt::CONFIGURE_CREDENTIALS, vec!["yes", "no"]).prompt()?;
             if is_configure == "yes" {
-                self.create_or_update_credentials().await?;
+                self.create_or_update_credentials(false).await?;
             } else if is_configure == "no" {
                 info!("Exiting program.");
                 return Ok(false);
@@ -299,7 +302,7 @@ impl AWSCredentials {
             .await
     }
 
-    async fn create_or_update_credentials(&self) -> Result<()> {
+    async fn create_or_update_credentials(&self, clear_cache: bool) -> Result<()> {
         info!("Configuring credentials...");
         let sso_config = Sso::configure_sso()?;
         info!("Building default config...");
@@ -313,6 +316,11 @@ impl AWSCredentials {
             session_name.as_str(),
             &PathBuf::from(load_cache_file()),
         )?;
+        if clear_cache {
+            let cache_dir = &PathBuf::from(load_cache_file()).join("sso").join("cache");
+            info!("Clearing cache file in {}", cache_dir.display());
+            token_provider.clear_cache(cache_dir).await;
+        }
         info!("Retrieving access token...");
         let access_token = token_provider
             .get_access_token(&sso_config.start_url)
