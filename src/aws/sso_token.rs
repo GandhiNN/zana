@@ -255,4 +255,10 @@ impl SsoAccessTokenProvider {
 
         self.cache.cache_token(new_access_token)
     }
+
+    pub async fn clear_cache(&self, config_dir: &Path) {
+        let sso_cache_dir = config_dir.join("sso").join("cache");
+        fs::remove_dir_all(&sso_cache_dir).unwrap();
+        fs::create_dir(&sso_cache_dir).unwrap();
+    }
 }

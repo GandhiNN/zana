@@ -54,6 +54,7 @@ impl Prompt {
     pub const INPUT_PROFILE: &'static str = "Enter the profile name you would like to use:";
     pub const SELECT_ROLE: &'static str = "Select the role you would like to assume:";
     pub const CONTINUE_PROGRAM: &'static str = "Would you like to continue?";
+    pub const CLEAR_CACHE: &'static str = "Would you like to clear the cache?";
 }
 
 #[allow(dead_code)]
