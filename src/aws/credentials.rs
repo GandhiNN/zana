@@ -123,10 +123,8 @@ impl AWSCredentials {
         let config_map = config_reader.load::<PathBuf>(path.into()).unwrap();
         // profile name is the key
         if !config_map.contains_key(profile) {
-            info!("Profile: {} does not exists.", profile);
             return Ok(false);
         }
-        info!("Profile: {} exists.", profile);
         Ok(true)
     }
 
