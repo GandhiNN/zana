@@ -35,8 +35,8 @@ pub async fn run(credentials_path: PathBuf) {
         profile
     );
     let mut aws_credentials = AWSCredentials::new(profile);
-    let _is_aws_credentials_exists = aws_credentials.check_credentials_file_existence();
-    let _res: Result<bool, anyhow::Error> = aws_credentials.configure().await;
+    // let _is_aws_credentials_exists = aws_credentials.check_credentials_file_existence();
+    let _res: Result<bool, anyhow::Error> = aws_credentials.configure(profile).await;
 
     let shared_config: aws_types::SdkConfig = aws_credentials
         .set_config(&credentials_path, profile, *timeout)

@@ -171,7 +171,6 @@ impl SsoAccessTokenProvider {
             .await?;
 
         // Prompt user to open browser
-        // open::that(auth_response.verification_uri_complete().unwrap())?;
         Browser::browse_edge_inprivate(auth_response.verification_uri_complete().unwrap());
 
         // TODO: Implement timeout for browser inactivity termination

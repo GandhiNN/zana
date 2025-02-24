@@ -117,6 +117,19 @@ impl AWSCredentials {
         Ok(true)
     }
 
+    pub fn check_if_profile_exists(&self, path: &PathBuf, profile: &str) -> Result<bool> {
+        // Check if profile exists in the credentials file
+        let mut config_reader = Ini::new();
+        let config_map = config_reader.load::<PathBuf>(path.into()).unwrap();
+        // profile name is the key
+        if !config_map.contains_key(profile) {
+            info!("Profile: {} does not exists.", profile);
+            return Ok(false);
+        }
+        info!("Profile: {} exists.", profile);
+        Ok(true)
+    }
+
     fn create_credentials_file(&self) -> Result<()> {
         let mut f = File::create(&self.credentials_file)?;
         f.write_all(CREDENTIALS_PLACEHOLDER.as_bytes())?;
@@ -174,7 +187,7 @@ impl AWSCredentials {
         Ok(String::from("ok"))
     }
 
-    pub async fn configure(&self) -> Result<bool> {
+    pub async fn configure(&self, profile: &str) -> Result<bool> {
         // Check if credentials file exists
         let credentials_file_exists = self.check_credentials_file_existence().unwrap();
         if credentials_file_exists {
@@ -198,6 +211,29 @@ impl AWSCredentials {
                     info!("Continuing program with possibly outdated credentials.");
                     return Ok(true);
                 }
+            } else {
+                info!("Credentials file {} is still fresh.", self.credentials_file);
+                info!("Continuing program with current credentials.");
+                info!("Checking if {} exists in the credentials...", profile);
+                let is_cred_exists =
+                    self.check_if_profile_exists(&PathBuf::from(&self.credentials_file), profile);
+                if is_cred_exists.unwrap() {
+                    info!("Profile: {} exists", profile);
+                } else {
+                    info!("Profile: {} does not exist", profile);
+                    let is_configure =
+                        Select::new(Prompt::CONFIGURE_CREDENTIALS, vec!["yes", "no"]).prompt()?;
+                    if is_configure == "yes" {
+                        self.create_or_update_credentials().await?;
+                    } else if is_configure == "no" {
+                        info!("Exiting program.");
+                        return Ok(false);
+                    } else {
+                        info!("Unrecognized input! Exiting program.");
+                        return Ok(false);
+                    }
+                }
+                return Ok(true);
             }
         } else {
             info!(
