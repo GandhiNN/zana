@@ -311,7 +311,7 @@ impl AWSCredentials {
         let account_info_provider = AccountInfoProvider::new(&default_config);
         info!("Retrieving session name...");
         let session_name = session_name(sso_config.start_url.as_str());
-        let token_provider = SsoAccessTokenProvider::new(
+        let mut token_provider = SsoAccessTokenProvider::new(
             &default_config,
             session_name.as_str(),
             &PathBuf::from(load_cache_file()),
@@ -319,7 +319,11 @@ impl AWSCredentials {
         if clear_cache {
             let cache_dir = &PathBuf::from(load_cache_file()).join("sso").join("cache");
             info!("Clearing cache file in {}", cache_dir.display());
-            token_provider.clear_cache(cache_dir).await;
+            token_provider = SsoAccessTokenProvider::clear_cache_and_recreate(
+                &default_config,
+                session_name.as_str(),
+                &PathBuf::from(load_cache_file()),
+            )?;
         }
         info!("Retrieving access token...");
         let access_token = token_provider

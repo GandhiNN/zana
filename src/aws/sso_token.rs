@@ -109,6 +109,21 @@ impl SsoAccessTokenProvider {
         })
     }
 
+    pub fn clear_cache_and_recreate(
+        config: &SdkConfig,
+        sso_session_name: &str,
+        config_dir: &Path,
+    ) -> Result<Self> {
+        let sso_cache_dir = config_dir.join("sso").join("cache");
+        fs::remove_dir_all(&sso_cache_dir).unwrap();
+        fs::create_dir(&sso_cache_dir).unwrap();
+        Ok(Self {
+            sso_session_name: String::from(sso_session_name),
+            client: Client::new(config),
+            cache: AccessTokenCache::new(sso_session_name, sso_cache_dir.as_path()),
+        })
+    }
+
     pub async fn get_access_token(&self, start_url: &str) -> Result<AccessToken> {
         info!("Checking cached token...");
         let cached_token_option = self.cache.get_cached_token();
@@ -254,11 +269,5 @@ impl SsoAccessTokenProvider {
         };
 
         self.cache.cache_token(new_access_token)
-    }
-
-    pub async fn clear_cache(&self, config_dir: &Path) {
-        let sso_cache_dir = config_dir.join("sso").join("cache");
-        fs::remove_dir_all(&sso_cache_dir).unwrap();
-        fs::create_dir(&sso_cache_dir).unwrap();
     }
 }
