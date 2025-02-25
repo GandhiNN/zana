@@ -222,17 +222,27 @@ impl AWSCredentials {
                     info!("Profile: {} does not exist", profile);
                     let is_clear_cache =
                         Select::new(Prompt::CLEAR_CACHE, vec!["yes", "no"]).prompt()?;
-                    println!("{}", is_clear_cache);
-                    let is_configure =
-                        Select::new(Prompt::CONFIGURE_CREDENTIALS, vec!["yes", "no"]).prompt()?;
-                    if is_configure == "yes" {
-                        self.create_or_update_credentials(false).await?;
-                    } else if is_configure == "no" {
-                        info!("Exiting program.");
-                        return Ok(false);
+                    if is_clear_cache == "yes" {
+                        let is_configure =
+                            Select::new(Prompt::CONFIGURE_CREDENTIALS, vec!["yes", "no"])
+                                .prompt()?;
+                        if is_configure == "yes" {
+                            self.create_or_update_credentials(true).await?;
+                        }
                     } else {
-                        info!("Unrecognized input! Exiting program.");
-                        return Ok(false);
+                        info!("Continuing with the existing cache file.");
+                        let is_configure =
+                            Select::new(Prompt::CONFIGURE_CREDENTIALS, vec!["yes", "no"])
+                                .prompt()?;
+                        if is_configure == "yes" {
+                            self.create_or_update_credentials(false).await?;
+                        } else if is_configure == "no" {
+                            info!("Exiting program.");
+                            return Ok(false);
+                        } else {
+                            info!("Unrecognized input! Exiting program.");
+                            return Ok(false);
+                        }
                     }
                 }
                 return Ok(true);
