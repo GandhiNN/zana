@@ -234,4 +234,16 @@ pub fn cmd() -> Command {
                         .arg_required_else_help(true),
                 ),
         )
+        .subcommand(
+            Command::new("ec2")
+                .about("Elastic Compute Cloud API")
+                .subcommand(
+                    Command::new("volumes")
+                        .about("EC2 volumes operations")
+                        .subcommand(
+                            Command::new("describe")
+                                .about("Describe EC2 volumes")
+                        )
+                )
+        )
 }

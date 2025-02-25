@@ -6,6 +6,7 @@ pub mod cost_explorer;
 pub mod credentials;
 pub mod docdb;
 pub mod dynamodb;
+pub mod ec2;
 pub mod glue;
 pub mod rds;
 pub mod redshift;

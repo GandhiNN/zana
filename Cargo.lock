@@ -306,6 +306,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "aws-sdk-ec2"
+version = "1.111.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e09d90669e1d5bb8d8d7266bb98a16dce6f134d6a1c669064fb1dfb3b037a09"
+dependencies = [
+ "aws-credential-types",
+ "aws-runtime",
+ "aws-smithy-async",
+ "aws-smithy-http",
+ "aws-smithy-json",
+ "aws-smithy-query",
+ "aws-smithy-runtime",
+ "aws-smithy-runtime-api",
+ "aws-smithy-types",
+ "aws-smithy-xml",
+ "aws-types",
+ "fastrand",
+ "http 0.2.12",
+ "once_cell",
+ "regex-lite",
+ "tracing",
+]
+
+[[package]]
 name = "aws-sdk-glue"
 version = "1.82.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3150,6 +3174,7 @@ dependencies = [
  "aws-sdk-costexplorer",
  "aws-sdk-docdb",
  "aws-sdk-dynamodb",
+ "aws-sdk-ec2",
  "aws-sdk-glue",
  "aws-sdk-rds",
  "aws-sdk-redshift",

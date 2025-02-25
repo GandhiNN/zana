@@ -5,6 +5,7 @@ use crate::aws::cost_explorer::CostExplorer;
 use crate::aws::credentials::AWSCredentials;
 use crate::aws::docdb::DocDB;
 use crate::aws::dynamodb::DynamoDB;
+use crate::aws::ec2::Ec2;
 use crate::aws::glue::Glue;
 use crate::aws::rds::RDS;
 use crate::aws::redshift::Redshift;
@@ -391,6 +392,22 @@ pub async fn run(credentials_path: PathBuf) {
                         pretty_print(res.unwrap());
                     } else {
                         let _ = write_csv(res.unwrap());
+                    }
+                }
+                _ => error!("Unknown input"),
+            }
+        }
+        Some(("ec2", sub_matches)) => {
+            let ec2 = Ec2::new(shared_config);
+            let ec2_commands = sub_matches.subcommand().unwrap();
+            match ec2_commands {
+                ("volumes", sub_matches) => {
+                    let volumes_submatches = sub_matches.subcommand().unwrap();
+                    match volumes_submatches {
+                        ("describe", _) => {
+                            let _res = ec2.describe_volumes().await;
+                        }
+                        _ => error!("Unknown input"),
                     }
                 }
                 _ => error!("Unknown input"),
