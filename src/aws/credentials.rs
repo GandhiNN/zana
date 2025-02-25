@@ -249,7 +249,7 @@ impl AWSCredentials {
             }
         } else {
             info!(
-                "Credentials file {} does not exists. Creating the file",
+                "Credentials file {} does not exist. Creating the file",
                 self.credentials_file
             );
             self.create_credentials_file()?;
@@ -328,7 +328,7 @@ impl AWSCredentials {
         )?;
         if clear_cache {
             let cache_dir = &PathBuf::from(load_cache_file()).join("sso").join("cache");
-            info!("Clearing cache file in {}", cache_dir.display());
+            info!("Clearing cache file in {}.", cache_dir.display());
             token_provider = SsoAccessTokenProvider::clear_cache_and_recreate(
                 &default_config,
                 session_name.as_str(),
@@ -339,6 +339,7 @@ impl AWSCredentials {
         let access_token = token_provider
             .get_access_token(&sso_config.start_url)
             .await?;
+        info!("Please close the browser once you are successfully authenticated.");
         info!("Retrieving sso accounts...");
         let mut sso_accounts = account_info_provider
             .get_account_list(&access_token)
