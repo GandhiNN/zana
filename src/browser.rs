@@ -104,6 +104,13 @@ impl Browser {
             .expect("process failed to execute");
     }
 
+    pub fn browse_edge(url: &str) {
+        Command::new(EDGE_PATH_WSL)
+            .args([url])
+            .status()
+            .expect("process failed to execute");
+    }
+
     pub fn print_url_map(self, url_map: &mut HashMap<String, Option<String>>) {
         println!("####################");
         println!("## Available URLs ##");
