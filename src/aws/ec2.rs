@@ -1,9 +1,6 @@
 use anyhow::Result;
-use aws_sdk_ec2::{Client, Error};
+use aws_sdk_ec2::Client;
 use aws_types::SdkConfig;
-use serde::Serialize;
-use std::fmt;
-use tabled::Tabled;
 
 pub struct Ec2 {
     pub client: Client,
