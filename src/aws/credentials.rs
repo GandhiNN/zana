@@ -1,5 +1,6 @@
 use crate::aws::sso::{session_name, AccountInfoProvider, Sso};
 use crate::aws::sso_token::SsoAccessTokenProvider;
+use crate::cli::prompt::Prompt;
 use crate::utils::fileutil::FileAge;
 use anyhow::Result;
 use aws_config::default_provider::credentials::DefaultCredentialsChain;
@@ -37,24 +38,6 @@ pub struct AWSCredentials {
     access_key_id: String,
     secret_access_key: String,
     session_token: String,
-}
-
-#[allow(dead_code)]
-#[non_exhaustive]
-struct Prompt {}
-
-#[allow(dead_code)]
-impl Prompt {
-    pub const CONFIGURE_CREDENTIALS: &'static str = "Would you like to configure the credentials?";
-    pub const REFRESH_CREDENTIALS: &'static str = "Would you like to refresh the credentials?";
-    pub const CONFIGURE_PROFILE: &'static str = "Would you like to configure the default profile?";
-    pub const CONFIGURE_REGION: &'static str = "Would you like to configure the default region?";
-    pub const SELECT_ACCOUNT: &'static str = "Select the account you would like to use:";
-    pub const SELECT_PROFILE: &'static str = "Select the profile you would like to use:";
-    pub const INPUT_PROFILE: &'static str = "Enter the profile name you would like to use:";
-    pub const SELECT_ROLE: &'static str = "Select the role you would like to assume:";
-    pub const CONTINUE_PROGRAM: &'static str = "Would you like to continue?";
-    pub const CLEAR_CACHE: &'static str = "Would you like to clear the cache?";
 }
 
 #[allow(dead_code)]
@@ -385,7 +368,7 @@ impl AWSCredentials {
     }
 }
 
-pub fn load_credentials_file() -> String {
+pub fn get_credentials_file_path() -> String {
     // Load credentials file
     let base_dirs = BaseDirs::new().unwrap();
     let home_dir = base_dirs.home_dir().to_string_lossy().to_string();
