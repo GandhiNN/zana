@@ -105,9 +105,13 @@ impl Sso {
     pub async fn register_sso(&self, config: SdkConfig) -> Result<()> {
         // Prepare the configuration
         let home_dir = get_home_dir();
+        println!("{}", home_dir.display());
         let aws_config_dir = self.get_config_dir(&home_dir).unwrap();
+        println!("{}", aws_config_dir.display());
         let aws_config_file = aws_config_dir.join(CONFIG_PATH);
+        println!("{}", aws_config_file.display());
         let aws_credentials_file = aws_config_dir.join(CREDENTIALS_PATH);
+        println!("{}", aws_credentials_file.display());
         let start_url = Text::new("SSO start-url:").prompt()?;
         let regions: Vec<String> = region::REGIONS.iter().map(|x| x.to_string()).collect();
         let sso_region = Select::new("SSO region:", regions).prompt()?;
