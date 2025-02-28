@@ -4,6 +4,7 @@ pub mod cloudfront;
 pub mod config;
 pub mod cost_explorer;
 pub mod credentials;
+pub mod defaults;
 pub mod docdb;
 pub mod dynamodb;
 pub mod ec2;
