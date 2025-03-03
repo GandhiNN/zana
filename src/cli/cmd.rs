@@ -6,6 +6,18 @@ pub fn cmd() -> Command {
         .about("A CLI tool to interact with AWS environment")
         .author("Ngakan Gandhi <ngandhi.pmintl.net>")
         .bin_name("zana")
+        .arg(
+            arg!(--profile <VALUE> "AWS profile name to use")
+                .value_parser(value_parser!(String))
+                .default_value("default")
+                .global(true)
+        )
+        .arg(
+            arg!(--timeout <VALUE> "AWS SDK timeout in milliseconds")
+                .value_parser(value_parser!(u64))
+                .default_value("10000")
+                .global(true),
+        )
         .subcommand(
             Command::new("glue")
                 .about("Glue API")
@@ -17,8 +29,6 @@ pub fn cmd() -> Command {
                                 Command::new("list")
                                     .arg(arg!(-j --"job-name" <VALUE> "Glue job name").required(true))
                                     .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                                    .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                                    .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                                     .arg_required_else_help(true),
                             ),
                         )
@@ -26,16 +36,12 @@ pub fn cmd() -> Command {
                             Command::new("list")
                                 .about("List available Glue jobs")
                                 .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                                .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                                .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                                 .arg_required_else_help(true),
                         )
                         .subcommand(
                             Command::new("bookmark")
                                 .about("Get Glue job bookmark")
                                 .arg(arg!(-j --"job-name" <VALUE> "Glue job name").required(true))
-                                .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                                .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                                 .arg_required_else_help(true),
                         )
                 )
@@ -45,8 +51,6 @@ pub fn cmd() -> Command {
                         .subcommand(
                             Command::new("list")
                                 .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                                .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                                .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                                 .arg_required_else_help(true),
                         ),
                 )
@@ -55,8 +59,6 @@ pub fn cmd() -> Command {
                         Command::new("list")
                             .arg(arg!(-d --database <VALUE> "Database name").required(true))
                             .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                            .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                            .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                             .arg_required_else_help(true),
                     ),
                 ),
@@ -68,8 +70,6 @@ pub fn cmd() -> Command {
                     Command::new("bucket").about("S3 bucket API").subcommand(
                         Command::new("list")
                             .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                            .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                            .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                             .arg_required_else_help(true),
                     ),
                 )
@@ -86,8 +86,6 @@ pub fn cmd() -> Command {
                                 .default_value("newer"))
                             .arg(arg!(-v --versions "List objects versions in an S3 bucket"))
                             .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                            .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                            .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                             .arg_required_else_help(true),
                     ),
                 ),
@@ -99,8 +97,6 @@ pub fn cmd() -> Command {
                     .subcommand(
                         Command::new("list")
                             .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                            .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                            .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                             .arg_required_else_help(true),
                     ),
             ),
@@ -114,8 +110,6 @@ pub fn cmd() -> Command {
                         .subcommand(
                             Command::new("list")
                             .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                            .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                            .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                                 .arg_required_else_help(true),
                         ),
                 )
@@ -125,8 +119,6 @@ pub fn cmd() -> Command {
                         .subcommand(
                             Command::new("describe")
                                 .arg(arg!(--table_name <VALUE> "DynamoDB table name"))
-                                .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                                .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                                 .arg_required_else_help(true),
                         ),
                 ),
@@ -140,8 +132,6 @@ pub fn cmd() -> Command {
                         .subcommand(
                             Command::new("describe")
                                 .arg(arg!(--cluster_id <VALUE> "Redshift Cluster ID"))
-                                .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                                .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                                 .arg_required_else_help(true),
                         ),
                 )
@@ -149,8 +139,6 @@ pub fn cmd() -> Command {
                     Command::new("events")
                         .about("Redshift events API")
                         .subcommand(Command::new("describe")
-                        .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                        .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                     ),
                 ),
         )
@@ -162,8 +150,6 @@ pub fn cmd() -> Command {
                         .about("Search resources")
                         .arg(arg!(--query <VALUE> "Query string. Reference: https://docs.aws.amazon.com/resource-explorer/latest/userguide/using-search-query-syntax.html").required(true))
                         .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                        .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                        .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                         .arg_required_else_help(true),
                 ),
         )
@@ -182,8 +168,6 @@ pub fn cmd() -> Command {
                         )
                         .arg(arg!(--"group-type" <VALUE> "Group by type. Possible values are:\n[dimension, tag, costcategory]").default_value("dimension"))
                         .arg(arg!(--"group-key" <VALUE> "Group by key. Possible values are:\n[az, instance_type, legal, entity_name, invoicing_entity, linked_account, operation, platform, purchase_type, service, tenancy, record_type, usage_type]").default_value("service"))
-                        .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                        .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                         .arg_required_else_help(true),
                 ),
         )
@@ -193,16 +177,11 @@ pub fn cmd() -> Command {
                 .subcommand(
                     Command::new("describe-clusters")
                         .about("Describe DocumentDB Clusters")
-                        .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                        .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000")
-                    )
                 )
                 .subcommand(
                     Command::new("describe-cluster")
                         .about("Describe DocumentDB Cluster")
                         .arg(arg!(--id <VALUE> "DB Cluster ID").required(true))
-                        .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                        .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                         .arg_required_else_help(true),
                 )
         )
@@ -215,8 +194,6 @@ pub fn cmd() -> Command {
                             .about("List foundational models")
                             .arg(arg!(-r --provider <VALUE> "Provider name").required(true).default_value("amazon"))
                             .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                            .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                            .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                             .arg_required_else_help(true),
                     )
                 )
@@ -225,8 +202,6 @@ pub fn cmd() -> Command {
                         Command::new("invoke-prompt")
                         .arg(arg!(--model <VALUE> "Bedrock foundational model ID").required(true))
                         .arg(arg!(--prompt <VALUE> "Prompt to send to the model").required(true))
-                        .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                        .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                         .arg_required_else_help(true),
                     ),
                 )
@@ -239,10 +214,7 @@ pub fn cmd() -> Command {
                         .about("AWS SSO OIDC operations").subcommand(
                             Command::new("configure")
                                 .about("Configure AWS SSO OIDC")
-                                .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                                .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000")
                             )
-                        )
                 ),
         )
         .subcommand(
@@ -251,10 +223,7 @@ pub fn cmd() -> Command {
                 .subcommand(
                     Command::new("list-distributions")
                         .about("List CloudFront distributions")
-                        .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                        .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000")
                     )
-                ),
         )
         .subcommand(
             Command::new("secrets-manager")
@@ -263,8 +232,6 @@ pub fn cmd() -> Command {
                     Command::new("list-secrets")
                         .about("List secrets")
                         .arg(arg!(-p --pretty "Pretty print output").action(ArgAction::SetTrue))
-                        .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                        .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000"))
                         .arg_required_else_help(true),
                 ),
         )
@@ -277,9 +244,6 @@ pub fn cmd() -> Command {
                         .subcommand(
                             Command::new("describe")
                                 .about("Describe EC2 volumes")
-                                .arg(arg!(--profile "SDK profile to use").value_parser(value_parser!(String)).required(true))
-                                .arg(arg!(--timeout "SDK timeout value").value_parser(value_parser!(u64)).required(true).default_value("10000")
-                            )
                         )
                 )
         )
