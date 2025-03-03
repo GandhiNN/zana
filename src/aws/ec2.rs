@@ -24,4 +24,22 @@ impl Ec2 {
         }
         Ok(())
     }
+
+    pub async fn describe_images_owned_by_account(&self) -> Result<()> {
+        let mut desc_images = self
+            .client
+            .describe_images()
+            .owners("self")
+            .into_paginator()
+            .send();
+        while let Some(desc_images_output) = desc_images.next().await {
+            match desc_images_output {
+                Ok(out) => {
+                    println!("{:#?}", out)
+                }
+                Err(e) => println!("{:#?}", e),
+            }
+        }
+        Ok(())
+    }
 }

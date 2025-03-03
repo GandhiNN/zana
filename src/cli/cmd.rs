@@ -245,6 +245,13 @@ pub fn cmd() -> Command {
                             Command::new("describe")
                                 .about("Describe EC2 volumes")
                         )
+                ).subcommand(
+                    Command::new("images")
+                        .about("EC2 images operations")
+                        .subcommand(
+                            Command::new("describe")
+                                .about("Describe EC2 images owned by account")
+                        )
                 )
         )
 }

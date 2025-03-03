@@ -410,6 +410,15 @@ pub async fn run(credentials_path: PathBuf) {
                         _ => error!("Unknown input"),
                     }
                 }
+                ("images", sub_matches) => {
+                    let images_submatches = sub_matches.subcommand().unwrap();
+                    match images_submatches {
+                        ("describe", _) => {
+                            let _res = ec2.describe_images_owned_by_account().await;
+                        }
+                        _ => error!("Unknown input"),
+                    }
+                }
                 _ => error!("Unknown input"),
             }
         }
