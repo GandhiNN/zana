@@ -48,7 +48,11 @@ impl Ec2 {
         while let Some(desc_instances_output) = desc_instances.next().await {
             match desc_instances_output {
                 Ok(out) => {
-                    println!("{:#?}", out)
+                    let _ = out.reservations.map(|x| {
+                        for i in x {
+                            println!("{:#?}", i)
+                        }
+                    });
                 }
                 Err(e) => println!("{:#?}", e),
             }
