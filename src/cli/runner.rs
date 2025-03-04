@@ -448,7 +448,8 @@ pub async fn run(credentials_path: PathBuf) {
                     let acc_submatches = submatches.subcommand().unwrap();
                     match acc_submatches {
                         ("get", _) => {
-                            let _res = sts.get_account_id().await;
+                            let res = sts.get_account_id().await;
+                            println!("{}", res.unwrap());
                         }
                         _ => error!("Unknown input"),
                     }
