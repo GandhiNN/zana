@@ -10,7 +10,7 @@ use crate::aws::glue::Glue;
 use crate::aws::rds::RDS;
 use crate::aws::redshift::Redshift;
 use crate::aws::resource_explorer::ResourceExplorer;
-use crate::aws::s3;
+use crate::aws::s3::S3;
 use crate::aws::secrets_manager::SecretsManager;
 use crate::aws::sso::Sso;
 use crate::aws::sts::STS;
@@ -151,13 +151,14 @@ pub async fn run(credentials_path: PathBuf) {
             }
         }
         Some(("s3", sub_matches)) => {
+            let s3 = S3::new(shared_config); // Initialize Glue client object
             let s3_command = sub_matches.subcommand().unwrap();
             match s3_command {
                 ("bucket", sub_matches) => {
                     let bucket_subcommands = sub_matches.subcommand().unwrap();
                     match bucket_subcommands {
                         ("list", flags) => {
-                            let res = s3::list_buckets(shared_config).await;
+                            let res = s3.list_buckets().await;
                             let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
                             if *pretty {
                                 pretty_print(res.unwrap());
@@ -177,14 +178,9 @@ pub async fn run(credentials_path: PathBuf) {
                             let last_mod_time =
                                 flags.get_one::<String>("last-modified-time").unwrap();
                             let predicate = flags.get_one::<String>("predicate").unwrap();
-                            let res = s3::list_objects(
-                                shared_config,
-                                bucket,
-                                prefix,
-                                last_mod_time,
-                                predicate,
-                            )
-                            .await;
+                            let res = s3
+                                .list_objects(bucket, prefix, last_mod_time, predicate)
+                                .await;
                             let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
                             if *pretty {
                                 pretty_print(res.unwrap());
@@ -194,7 +190,7 @@ pub async fn run(credentials_path: PathBuf) {
                         }
                         ("versions", flags) => {
                             let bucket = flags.get_one::<String>("bucket").unwrap();
-                            let res = s3::list_objects_versions(shared_config, bucket).await;
+                            let res = s3.list_objects_versions(bucket).await;
                             let pretty = flags.get_one::<bool>("pretty").unwrap_or(&false);
                             if *pretty {
                                 pretty_print(res.unwrap());

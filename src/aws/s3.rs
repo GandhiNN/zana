@@ -32,121 +32,133 @@ pub struct S3ObjectVersion {
     obj_owner: String,
 }
 
-async fn set_client(config: SdkConfig) -> Result<Client, Error> {
-    let client = Client::new(&config);
-    Ok(client)
+pub struct S3 {
+    pub client: Client,
 }
 
-pub async fn list_buckets(config: SdkConfig) -> Result<Vec<S3Bucket>, Error> {
-    let client = set_client(config).await?;
-    let mut list_buckets = client.list_buckets().into_paginator().send();
-    let mut s3_bucket: Vec<S3Bucket> = Vec::new();
-    while let Some(list_buckets_output) = list_buckets.next().await {
-        match list_buckets_output {
-            Ok(list_buckets) => {
-                let buckets = list_buckets.buckets();
-                for bucket in buckets {
-                    s3_bucket.push(S3Bucket {
-                        name: bucket.name().unwrap().to_string(),
-                        created_at: bucket.creation_date().unwrap().to_string(),
-                        region: bucket.bucket_region().unwrap_or("None").to_string(),
-                    });
-                }
-            }
-            Err(e) => println!("{:?}", e),
-        }
+impl S3 {
+    pub fn new(config: SdkConfig) -> Self {
+        let client = Client::new(&config);
+        Self { client }
     }
-    Ok(s3_bucket)
-}
 
-pub async fn list_objects(
-    config: SdkConfig,
-    bucket: &str,
-    prefix: &str,
-    last_modified_date: &str,
-    predicate: &str,
-) -> Result<Vec<S3Object>> {
-    let client = set_client(config).await?;
-    let mut list_objects = client
-        .list_objects_v2()
-        .bucket(bucket)
-        .prefix(prefix)
-        .into_paginator()
-        .send();
-    let mut s3_objects: Vec<S3Object> = Vec::new();
-    let last_mod_time: DateTime<Utc> = convert_naive_datetime_to_utc(last_modified_date);
-    while let Some(list_objects_v2_output) = list_objects.next().await {
-        match list_objects_v2_output {
-            Ok(list_objects) => {
-                let objects = list_objects.contents();
-                if predicate == "newer" {
-                    for object in objects {
-                        if object
-                            .last_modified()
-                            .unwrap()
-                            .to_string()
-                            .parse::<DateTime<Utc>>()
-                            .unwrap()
-                            > last_mod_time
-                        {
-                            s3_objects.push(S3Object {
-                                obj_key: object.key().unwrap().to_string(),
-                                obj_last_modified_at: object.last_modified().unwrap().to_string(),
-                                obj_etag: object.e_tag().unwrap().to_string(),
-                                obj_size: object.size().unwrap(),
-                                obj_storage_class: object.storage_class().unwrap().to_string(),
-                            });
-                        }
-                    }
-                } else if predicate == "older" {
-                    for object in objects {
-                        if object
-                            .last_modified()
-                            .unwrap()
-                            .to_string()
-                            .parse::<DateTime<Utc>>()
-                            .unwrap()
-                            < last_mod_time
-                        {
-                            s3_objects.push(S3Object {
-                                obj_key: object.key().unwrap().to_string(),
-                                obj_last_modified_at: object.last_modified().unwrap().to_string(),
-                                obj_etag: object.e_tag().unwrap().to_string(),
-                                obj_size: object.size().unwrap(),
-                                obj_storage_class: object.storage_class().unwrap().to_string(),
-                            });
-                        }
+    pub async fn list_buckets(&self) -> Result<Vec<S3Bucket>, Error> {
+        let mut list_buckets = self.client.list_buckets().into_paginator().send();
+        let mut s3_bucket: Vec<S3Bucket> = Vec::new();
+        while let Some(list_buckets_output) = list_buckets.next().await {
+            match list_buckets_output {
+                Ok(list_buckets) => {
+                    let buckets = list_buckets.buckets();
+                    for bucket in buckets {
+                        s3_bucket.push(S3Bucket {
+                            name: bucket.name().unwrap().to_string(),
+                            created_at: bucket.creation_date().unwrap().to_string(),
+                            region: bucket.bucket_region().unwrap_or("None").to_string(),
+                        });
                     }
                 }
+                Err(e) => println!("{:?}", e),
             }
-            Err(e) => return Err(e.into()),
         }
+        Ok(s3_bucket)
     }
-    Ok(s3_objects)
-}
 
-pub async fn list_objects_versions(
-    config: SdkConfig,
-    bucket: &str,
-) -> Result<Vec<S3ObjectVersion>, Error> {
-    let client = set_client(config).await?;
-    let list_objects_versions = client.list_object_versions().bucket(bucket).send().await?;
-    let mut s3_object_version: Vec<S3ObjectVersion> = Vec::new();
-    for version in list_objects_versions.versions() {
-        s3_object_version.push(S3ObjectVersion {
-            obj_key: version.key().unwrap_or_default().to_string(),
-            obj_version_id: version.version_id().unwrap_or_default().to_string(),
-            obj_is_latest: version.is_latest().unwrap(),
-            obj_last_modified_date: version.last_modified().unwrap().to_string(),
-            obj_size: version.size().unwrap_or_default(),
-            obj_etag: version.e_tag().unwrap_or_default().to_string(),
-            obj_owner: version
-                .owner()
-                .unwrap()
-                .display_name()
-                .unwrap_or_default()
-                .to_string(),
-        });
+    pub async fn list_objects(
+        &self,
+        bucket: &str,
+        prefix: &str,
+        last_modified_date: &str,
+        predicate: &str,
+    ) -> Result<Vec<S3Object>> {
+        let mut list_objects = self
+            .client
+            .list_objects_v2()
+            .bucket(bucket)
+            .prefix(prefix)
+            .into_paginator()
+            .send();
+        let mut s3_objects: Vec<S3Object> = Vec::new();
+        let last_mod_time: DateTime<Utc> = convert_naive_datetime_to_utc(last_modified_date);
+        while let Some(list_objects_v2_output) = list_objects.next().await {
+            match list_objects_v2_output {
+                Ok(list_objects) => {
+                    let objects = list_objects.contents();
+                    if predicate == "newer" {
+                        for object in objects {
+                            if object
+                                .last_modified()
+                                .unwrap()
+                                .to_string()
+                                .parse::<DateTime<Utc>>()
+                                .unwrap()
+                                > last_mod_time
+                            {
+                                s3_objects.push(S3Object {
+                                    obj_key: object.key().unwrap().to_string(),
+                                    obj_last_modified_at: object
+                                        .last_modified()
+                                        .unwrap()
+                                        .to_string(),
+                                    obj_etag: object.e_tag().unwrap().to_string(),
+                                    obj_size: object.size().unwrap(),
+                                    obj_storage_class: object.storage_class().unwrap().to_string(),
+                                });
+                            }
+                        }
+                    } else if predicate == "older" {
+                        for object in objects {
+                            if object
+                                .last_modified()
+                                .unwrap()
+                                .to_string()
+                                .parse::<DateTime<Utc>>()
+                                .unwrap()
+                                < last_mod_time
+                            {
+                                s3_objects.push(S3Object {
+                                    obj_key: object.key().unwrap().to_string(),
+                                    obj_last_modified_at: object
+                                        .last_modified()
+                                        .unwrap()
+                                        .to_string(),
+                                    obj_etag: object.e_tag().unwrap().to_string(),
+                                    obj_size: object.size().unwrap(),
+                                    obj_storage_class: object.storage_class().unwrap().to_string(),
+                                });
+                            }
+                        }
+                    }
+                }
+                Err(e) => return Err(e.into()),
+            }
+        }
+        Ok(s3_objects)
     }
-    Ok(s3_object_version)
+
+    pub async fn list_objects_versions(&self, bucket: &str) -> Result<Vec<S3ObjectVersion>, Error> {
+        let list_objects_versions = self
+            .client
+            .list_object_versions()
+            .bucket(bucket)
+            .send()
+            .await?;
+        let mut s3_object_version: Vec<S3ObjectVersion> = Vec::new();
+        for version in list_objects_versions.versions() {
+            s3_object_version.push(S3ObjectVersion {
+                obj_key: version.key().unwrap_or_default().to_string(),
+                obj_version_id: version.version_id().unwrap_or_default().to_string(),
+                obj_is_latest: version.is_latest().unwrap(),
+                obj_last_modified_date: version.last_modified().unwrap().to_string(),
+                obj_size: version.size().unwrap_or_default(),
+                obj_etag: version.e_tag().unwrap_or_default().to_string(),
+                obj_owner: version
+                    .owner()
+                    .unwrap()
+                    .display_name()
+                    .unwrap_or_default()
+                    .to_string(),
+            });
+        }
+        Ok(s3_object_version)
+    }
 }
