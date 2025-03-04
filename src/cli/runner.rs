@@ -427,6 +427,15 @@ pub async fn run(credentials_path: PathBuf) {
                         _ => error!("Unknown input"),
                     }
                 }
+                ("instances", sub_matches) => {
+                    let instances_submatches = sub_matches.subcommand().unwrap();
+                    match instances_submatches {
+                        ("describe", _) => {
+                            let _res = ec2.describe_instances_owned_by_account().await;
+                        }
+                        _ => error!("Unknown input"),
+                    }
+                }
                 _ => error!("Unknown input"),
             }
         }

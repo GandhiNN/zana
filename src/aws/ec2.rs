@@ -42,4 +42,17 @@ impl Ec2 {
         }
         Ok(())
     }
+
+    pub async fn describe_instances_owned_by_account(&self) -> Result<()> {
+        let mut desc_instances = self.client.describe_instances().into_paginator().send();
+        while let Some(desc_instances_output) = desc_instances.next().await {
+            match desc_instances_output {
+                Ok(out) => {
+                    println!("{:#?}", out)
+                }
+                Err(e) => println!("{:#?}", e),
+            }
+        }
+        Ok(())
+    }
 }
