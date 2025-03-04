@@ -18,6 +18,12 @@ pub fn cmd() -> Command {
                 .default_value("10000")
                 .global(true),
         )
+        .arg(
+            arg!(--"disable-stalled-stream-protection" <VALUE> "Disable AWS SDK stalled-stream-protection")
+                .value_parser(value_parser!(String))
+                .default_value("true")
+                .global(true),
+        )
         .subcommand(
             Command::new("glue")
                 .about("Glue API")

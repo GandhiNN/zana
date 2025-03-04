@@ -24,10 +24,14 @@ pub async fn run(credentials_path: PathBuf) {
 
     // Parse global arguments to propagate to subcommands
     let default_profile = "default".to_owned();
+    let default_stalled_stream_protection_flag = "true".to_owned();
     let profile = matches
         .get_one::<String>("profile")
         .unwrap_or(&default_profile);
     let timeout: &u64 = matches.get_one::<u64>("timeout").unwrap_or(&(5000_u64));
+    let is_disable_stalled_stream_protection = matches
+        .get_one::<String>("disable-stalled-stream-protection")
+        .unwrap_or(&default_stalled_stream_protection_flag);
 
     // Load AWS Credentials Configuration
     info!(
@@ -36,14 +40,18 @@ pub async fn run(credentials_path: PathBuf) {
         profile
     );
     let mut aws_credentials = AWSCredentials::new(profile);
-    // let _is_aws_credentials_exists = aws_credentials.check_credentials_file_existence();
     let res: Result<bool, anyhow::Error> = aws_credentials.configure(profile).await;
     if !res.unwrap() {
         std::process::exit(exitcode::ExitCode::from(1));
     }
 
     let shared_config: aws_types::SdkConfig = aws_credentials
-        .set_config(&credentials_path, profile, *timeout)
+        .set_config(
+            &credentials_path,
+            profile,
+            *timeout,
+            is_disable_stalled_stream_protection,
+        )
         .await;
 
     // Match commands and subcommands input

@@ -5,6 +5,7 @@ use crate::utils::fileutil::FileAge;
 use anyhow::Result;
 use aws_config::default_provider::credentials::DefaultCredentialsChain;
 use aws_config::default_provider::region::DefaultRegionChain;
+use aws_config::stalled_stream_protection::StalledStreamProtectionConfig;
 use aws_config::timeout::TimeoutConfig;
 use aws_types::region::Region;
 use configparser::ini::Ini;
@@ -256,6 +257,7 @@ impl AWSCredentials {
         path: &PathBuf,
         profile: &str,
         timeout: u64,
+        disable_stalled_stream_protection: &str,
     ) -> aws_types::SdkConfig {
         // Load credentials file
         self.load(path, profile).await;
@@ -286,13 +288,24 @@ impl AWSCredentials {
         set_var("AWS_SESSION_TOKEN", self.session_token.as_str());
 
         // set AWS config
-        aws_config::from_env()
-            .credentials_provider(credentials_chain)
-            .profile_name(self.profile.clone())
-            .region(Region::new(self.region.clone()))
-            .timeout_config(timeout_config)
-            .load()
-            .await
+        if disable_stalled_stream_protection == "true" {
+            aws_config::from_env()
+                .credentials_provider(credentials_chain)
+                .profile_name(self.profile.clone())
+                .region(Region::new(self.region.clone()))
+                .timeout_config(timeout_config)
+                .stalled_stream_protection(StalledStreamProtectionConfig::disabled())
+                .load()
+                .await
+        } else {
+            aws_config::from_env()
+                .credentials_provider(credentials_chain)
+                .profile_name(self.profile.clone())
+                .region(Region::new(self.region.clone()))
+                .timeout_config(timeout_config)
+                .load()
+                .await
+        }
     }
 
     async fn create_or_update_credentials(&self, clear_cache: bool) -> Result<()> {
