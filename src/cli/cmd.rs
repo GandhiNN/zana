@@ -267,4 +267,16 @@ pub fn cmd() -> Command {
                         )
                 )
         )
+        .subcommand(
+            Command::new("sts")
+                .about("STS API")
+                .subcommand(
+                    Command::new("account")
+                        .about("STS account operations")
+                        .subcommand(
+                            Command::new("get")
+                                .about("Get account ID")
+                        )
+                )
+        )
 }

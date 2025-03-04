@@ -13,6 +13,7 @@ use crate::aws::resource_explorer::ResourceExplorer;
 use crate::aws::s3;
 use crate::aws::secrets_manager::SecretsManager;
 use crate::aws::sso::Sso;
+use crate::aws::sts::STS;
 use crate::cli::cmd;
 use crate::utils::common::{pretty_print, write_csv};
 use std::path::PathBuf;
@@ -432,6 +433,22 @@ pub async fn run(credentials_path: PathBuf) {
                     match instances_submatches {
                         ("describe", _) => {
                             let _res = ec2.describe_instances_owned_by_account().await;
+                        }
+                        _ => error!("Unknown input"),
+                    }
+                }
+                _ => error!("Unknown input"),
+            }
+        }
+        Some(("sts", sub_matches)) => {
+            let sts = STS::new(shared_config);
+            let sts_commands = sub_matches.subcommand().unwrap();
+            match sts_commands {
+                ("account", submatches) => {
+                    let acc_submatches = submatches.subcommand().unwrap();
+                    match acc_submatches {
+                        ("get", _) => {
+                            let _res = sts.get_account_id().await;
                         }
                         _ => error!("Unknown input"),
                     }

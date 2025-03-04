@@ -17,3 +17,4 @@ pub mod s3;
 pub mod secrets_manager;
 pub mod sso;
 pub mod sso_token;
+pub mod sts;
